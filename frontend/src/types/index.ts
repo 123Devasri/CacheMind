@@ -24,6 +24,20 @@ export interface QueryResponse {
   log_id?: string;
 }
 
+export interface QueryCheckResponse {
+  status: string; // "HIT" | "CACHE_MISS" | "NEEDS_CONFIRMATION"
+  is_cached: boolean;
+  needs_confirmation: boolean;
+  original_query: string;
+  optimized_query?: string | null;
+  removed_filler?: string[];
+  answer?: string | null;
+  provider_used?: string | null;
+  candidate?: CandidateInfo | null;
+  lookup_latency_ms?: number | null;
+  total_latency_ms?: number | null;
+}
+
 export interface DashboardSummary {
   total_queries: number;
   cache_hits: number;
@@ -33,6 +47,7 @@ export interface DashboardSummary {
   avg_fallback_latency_ms: number;
   estimated_calls_avoided: number;
   estimated_cost_saved_usd: number;
+  estimated_cost_saved_inr: number;
   active_threshold: number;
   target_fhr: number;
   observed_fhr: number | null;
@@ -55,6 +70,19 @@ export interface CacheEntry {
   is_active: boolean;
   hit_count: number;
   created_at: string;
+}
+
+export interface Policy {
+  id: string;
+  policy_id: string;
+  name: string;
+  domain: string;
+  jurisdiction: string;
+  employee_category: string;
+  current_version: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ModelStatusResponse {
@@ -151,4 +179,8 @@ export interface SettingsData {
   openai_model: string;
   openai_api_key_configured: boolean;
   openai_api_key?: string;
+  grok_api_key_configured?: boolean;
+  grok_api_key?: string;
+  company_name?: string;
+  location?: string;
 }

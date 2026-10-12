@@ -2,7 +2,9 @@ import axios from 'axios';
 import {
   DashboardSummary,
   QueryResponse,
+  QueryCheckResponse,
   CacheEntry,
+  Policy,
   ModelStatusResponse,
   EvaluationResultsResponse,
   ClusterAnalyticsResponse,
@@ -24,6 +26,42 @@ export const submitQuery = async (query: string, domain?: string): Promise<Query
   return res.data;
 };
 
+export const checkOrOptimizeQuery = async (query: string, domain?: string): Promise<QueryCheckResponse> => {
+  const res = await api.post('/query/check-or-optimize', { query, domain });
+  return res.data;
+};
+
+// Policies CRUD & Upload
+export const getPolicies = async (): Promise<Policy[]> => {
+  const res = await api.get('/policies');
+  return res.data;
+};
+
+export const createPolicy = async (policyData: Partial<Policy>): Promise<Policy> => {
+  const res = await api.post('/policies', policyData);
+  return res.data;
+};
+
+export const updatePolicy = async (policyId: string, policyData: Partial<Policy>): Promise<Policy> => {
+  const res = await api.put(`/policies/${policyId}`, policyData);
+  return res.data;
+};
+
+export const deletePolicy = async (policyId: string): Promise<any> => {
+  const res = await api.delete(`/policies/${policyId}`);
+  return res.data;
+};
+
+export const uploadPolicyFile = async (formData: FormData): Promise<any> => {
+  const res = await api.post('/policies/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+  return res.data;
+};
+
+// Cache entries
 export const getCacheEntries = async (domain?: string, verifiedOnly: boolean = false): Promise<CacheEntry[]> => {
   const res = await api.get('/cache', {
     params: { domain, verified_only: verifiedOnly }
@@ -46,6 +84,7 @@ export const rebuildCacheIndex = async (): Promise<any> => {
   return res.data;
 };
 
+// ML Models
 export const getModelStatus = async (): Promise<ModelStatusResponse> => {
   const res = await api.get('/models/status');
   return res.data;

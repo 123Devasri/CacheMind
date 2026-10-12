@@ -166,7 +166,7 @@ class CacheDecisionPipeline:
         else:
             decision = "CACHE_MISS"
             is_cached = False
-            fallback_res = llm_service.generate_response(query, domain=domain_filter)
+            fallback_res = llm_service.generate_response(db=db, query=query, domain=domain_filter)
             returned_answer = fallback_res["answer"]
             provider_used = fallback_res["provider"]
             total_latency_ms = (time.perf_counter() - start_time) * 1000.0

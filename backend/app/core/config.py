@@ -26,17 +26,18 @@ class Settings(BaseSettings):
     DATASETS_DIR: Path = DATA_DIR / "datasets"
     
     # Governance Defaults
-    DEFAULT_CACHE_THRESHOLD: float = 0.88
+    DEFAULT_CACHE_THRESHOLD: float = 0.50
     DEFAULT_MIN_COSINE_SIM: float = 0.65
     DEFAULT_TOP_K: int = 5
     TARGET_FHR: float = 0.01  # 1% False-Hit Rate Target
     CONFIDENCE_LEVEL: float = 0.95
     CACHE_EXPIRY_DAYS: int = 90
     
-    # Fallback Provider
-    FALLBACK_PROVIDER: str = "local_mock"  # "local_mock" or "openai"
+    # Fallback & Grounding Providers
+    FALLBACK_PROVIDER: str = "grounded_company_policy_engine"
     OPENAI_API_KEY: str = ""
     OPENAI_MODEL: str = "gpt-4o-mini"
+    GROK_API_KEY: str = ""
     
     class Config:
         env_file = ".env"

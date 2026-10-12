@@ -31,13 +31,26 @@ class QueryResponse(BaseModel):
     total_latency_ms: float
     log_id: Optional[str] = None
 
+class QueryCheckResponse(BaseModel):
+    status: str # "HIT", "CACHE_MISS", "NEEDS_CONFIRMATION"
+    is_cached: bool
+    needs_confirmation: bool = False
+    original_query: str
+    optimized_query: Optional[str] = None
+    removed_filler: List[str] = Field(default_factory=list)
+    answer: Optional[str] = None
+    provider_used: Optional[str] = None
+    candidate: Optional[CandidateInfo] = None
+    lookup_latency_ms: Optional[float] = None
+    total_latency_ms: Optional[float] = None
+
 # Cache schemas
 class CacheEntryCreate(BaseModel):
     question: str
     answer: str
     policy_id: str
     domain: str
-    jurisdiction: Optional[str] = "GLOBAL"
+    jurisdiction: Optional[str] = "INDIA"
     employee_category: Optional[str] = "ALL"
     numerical_limits: Optional[Dict[str, float]] = Field(default_factory=dict)
     is_verified: bool = True
@@ -72,6 +85,37 @@ class CacheEntryResponse(BaseModel):
     class Config:
         from_attributes = True
 
+# Policy schemas
+class PolicyCreate(BaseModel):
+    policy_id: str
+    name: str
+    domain: str
+    jurisdiction: Optional[str] = "INDIA"
+    employee_category: Optional[str] = "ALL"
+    content: str
+
+class PolicyUpdate(BaseModel):
+    name: Optional[str] = None
+    domain: Optional[str] = None
+    jurisdiction: Optional[str] = None
+    employee_category: Optional[str] = None
+    content: Optional[str] = None
+
+class PolicyResponse(BaseModel):
+    id: str
+    policy_id: str
+    name: str
+    domain: str
+    jurisdiction: str
+    employee_category: str
+    current_version: str
+    content: str
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
 # Settings schema
 class SettingsUpdate(BaseModel):
     cache_threshold: Optional[float] = None
@@ -82,6 +126,7 @@ class SettingsUpdate(BaseModel):
     fallback_provider: Optional[str] = None
     openai_api_key: Optional[str] = None
     openai_model: Optional[str] = None
+    grok_api_key: Optional[str] = None
 
 # Dashboard summary schema
 class DashboardSummary(BaseModel):
@@ -93,6 +138,7 @@ class DashboardSummary(BaseModel):
     avg_fallback_latency_ms: float
     estimated_calls_avoided: int
     estimated_cost_saved_usd: float
+    estimated_cost_saved_inr: float
     active_threshold: float
     target_fhr: float
     observed_fhr: Optional[float]
