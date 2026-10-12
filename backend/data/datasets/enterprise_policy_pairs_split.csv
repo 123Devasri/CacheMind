@@ -1,0 +1,46 @@
+q1,q2,label,group,split
+How many days of annual leave do permanent employees receive?,How many days of annual leave do permanent employees get?,1,hr_leave_fte_direct,test
+How many annual vacation days do permanent employees receive?,How many days of annual leave do permanent employees get?,1,hr_leave_fte_direct,test
+How many annual leave days do full-time employees get?,What is the vacation entitlement for permanent staff?,1,hr_leave_fte,calibration
+How many days of paid time off do regular workers receive?,What is the annual PTO limit for full-time employees?,1,hr_leave_fte,calibration
+Do contractors get paid time off?,Are temporary workers and vendors entitled to paid leave?,1,hr_leave_contractor,calibration
+Are contractors entitled to paid vacation days?,Do independent contractors receive paid vacation?,1,hr_leave_contractor_direct,test
+Can employees work from home two days a week?,Is remote work permitted up to 2 days weekly?,1,hr_wfh_days,train
+How many days per week can employees work remotely?,How many days a week can staff work from home?,1,hr_wfh_days_direct,train
+What is the daily meal allowance for travel in the US?,What is the daily meal stipend for US travel?,1,fin_perdiem_us_direct,train
+What is the meal allowance for travel in America?,What is the daily per diem for US business trips?,1,fin_perdiem_us,validation
+How much can I claim for daily meals in the USA?,What is the per diem meal rate in the US?,1,fin_perdiem_us,validation
+What is the domestic travel allowance in India?,What is the domestic travel per diem rate in India?,1,fin_perdiem_india_direct,validation
+What is the daily allowance for travel in India?,What is the per diem rate for Indian domestic trips?,1,fin_perdiem_india,train
+How many rupees is the per diem in India?,What is the daily travel meal stipend in INR?,1,fin_perdiem_india,train
+Is VPN mandatory when accessing internal enterprise systems remotely?,Is VPN required to access company systems from home?,1,it_vpn_direct,calibration
+Is VPN needed to work from home?,Do I have to connect to company VPN for remote access?,1,it_vpn_remote,calibration
+Is disk encryption required on company laptops?,Must corporate laptops have hard drive encryption enabled?,1,it_encryption,train
+Can I take 20 days vacation this year?,Are 20 days of annual leave provided to employees?,1,hr_leave_fte_2,train
+Do interns qualify for company paid vacation?,Can summer interns claim paid time off?,1,hr_intern_pto,train
+What is the sick leave policy for contractors?,Do contractors receive sick pay from the firm?,1,hr_leave_contractor_2,train
+Can I expense $100 without a receipt?,Are receipts required for 100 dollar expenses?,1,fin_receipt_req,validation
+How much can I spend on food in New York on travel?,What is the meal budget for US domestic travel?,1,fin_perdiem_us_2,train
+What is the daily food allowance in Bangalore?,How much per diem is provided for business trips to India?,1,fin_perdiem_india_2,train
+Is Okta SSO required for cloud logins?,Must users authenticate through Okta single sign-on?,1,it_sso_cloud,train
+What happens to leftover annual leave at year end?,Do unused vacation days carry over into next year?,1,hr_leave_rollover,test
+How many annual leave days do permanent employees receive?,How many leave days do contractors get?,0,hr_mismatch_category,calibration
+Can permanent staff work remotely 2 days a week?,Can permanent staff work remotely 5 days a week?,0,hr_mismatch_numeric,train
+Do full-time workers get 20 days off?,Do full-time workers get 10 days off?,0,hr_mismatch_numeric,train
+Are contractors entitled to paid leave?,Are contractors not entitled to paid leave?,0,hr_negation_flip,calibration
+What is the travel per diem in the US?,What is the travel allowance in India?,0,fin_jurisdiction_conflict,validation
+Is the US travel meal rate $75 a day?,Is the US travel meal rate $150 a day?,0,fin_amount_conflict,calibration
+Do I need receipts for expenses over $25?,Do I need receipts for expenses under $25?,0,fin_threshold_conflict,train
+Is India per diem INR 3000?,Is India per diem INR 5000?,0,fin_amount_conflict,calibration
+Is VPN mandatory for office employees?,Is VPN mandatory for remote workers?,0,it_scope_conflict,test
+Can I use my personal laptop for work?,Can I use corporate laptops for work?,0,it_device_conflict,validation
+Do contractors get company-issued laptops?,Do permanent employees get company-issued laptops?,0,it_category_conflict,train
+How many annual leave days do permanent employees receive?,What is the daily per diem for US business trips?,0,cross_domain_hr_fin,calibration
+Can employees work from home two days a week?,Do I need receipts for travel expenses?,0,cross_domain_hr_fin_2,train
+What is the travel per diem in the US?,Is corporate VPN mandatory for remote work?,0,cross_domain_fin_it,train
+How many days of paid time off do regular workers receive?,Must enterprise laptops have full disk encryption?,0,cross_domain_hr_it,train
+What is the domestic travel allowance in India?,How many days per week can staff work remotely?,0,cross_domain_fin_hr,test
+Is Okta SSO required for cloud logins?,What is the daily travel meal stipend in INR?,0,cross_domain_it_fin,train
+Are contractors entitled to paid leave?,What happens to leftover vacation at year end?,0,hr_diff_topics,train
+What is the domestic travel allowance in India?,Do I need receipts for expenses over $25?,0,fin_diff_topics,train
+Is disk encryption optional on company MacBooks?,Is disk encryption compulsory on enterprise laptops?,0,it_opt_compulsory,test
