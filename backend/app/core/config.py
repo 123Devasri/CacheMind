@@ -39,6 +39,14 @@ class Settings(BaseSettings):
     OPENAI_MODEL: str = "gpt-4o-mini"
     GROK_API_KEY: str = ""
     
+    def model_post_init(self, __context):
+        # Ensure SQLite always resolves to the absolute backend directory regardless of working directory
+        if "sqlite" in self.DATABASE_URL:
+            clean_path = self.DATABASE_URL.replace("sqlite:///", "")
+            if clean_path == "cache_governance.db" or not Path(clean_path).is_absolute():
+                abs_db = (BASE_DIR / "cache_governance.db").resolve().as_posix()
+                self.DATABASE_URL = f"sqlite:///{abs_db}"
+    
     class Config:
         env_file = ".env"
         extra = "allow"
