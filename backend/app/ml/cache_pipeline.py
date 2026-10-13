@@ -3,7 +3,7 @@ from typing import Optional, Dict, Any, List
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.models.entities import CachedEntry, QueryAuditLog, ThresholdEvaluationRun
+from app.models.entities import CachedEntry, QueryAuditLog, ThresholdEvaluationRun, Policy
 from app.ml.embeddings import embedding_service
 from app.ml.faiss_index import faiss_service
 from app.ml.policy_validation import extract_policy_conditions, validate_condition_safety, normalize_text
@@ -27,8 +27,8 @@ class CacheDecisionPipeline:
     10. Compare with active statistical threshold.
     11. Final verification checks.
     12. Return verified cached answer if all checks pass.
-    13. Otherwise invoke LLM fallback / local mock.
-    14. Persist comprehensive audit log.
+    13. Otherwise invoke extractive policy-grounded fallback.
+    14. Persist comprehensive audit log with user and session tracking.
     """
     def __init__(self):
         pass
@@ -43,7 +43,9 @@ class CacheDecisionPipeline:
         self,
         db: Session,
         query: str,
-        domain_filter: Optional[str] = None
+        domain_filter: Optional[str] = None,
+        user_id: Optional[str] = None,
+        conversation_id: Optional[str] = None
     ) -> Dict[str, Any]:
         start_time = time.perf_counter()
         lookup_start = start_time
@@ -55,8 +57,14 @@ class CacheDecisionPipeline:
                 "decision": "REJECTED_EMPTY_QUERY",
                 "answer": "Query cannot be empty.",
                 "is_cached": False,
-                "reasons": ["Empty query string provided."],
-                "latency_ms": 0.0
+                "provider_used": "validation_guard",
+                "rejection_reasons": ["Empty query string provided."],
+                "lookup_latency_ms": 0.0,
+                "total_latency_ms": 0.0,
+                "policy_id": None,
+                "policy_version": None,
+                "source_citation": None,
+                "source_document": None
             }
 
         # Step 2: Extract conditions
@@ -95,6 +103,12 @@ class CacheDecisionPipeline:
                 # Must be verified
                 if not cand_db.is_verified:
                     rejection_reasons.append(f"Candidate {cand_db.id} is marked unverified.")
+                    continue
+
+                # Check if referenced policy document is active and not obsolete
+                pol_rec = db.query(Policy).filter(Policy.policy_id == cand_db.policy_id).first()
+                if pol_rec and (getattr(pol_rec, "status", "active") == "obsolete"):
+                    rejection_reasons.append(f"Referenced policy {cand_db.policy_id} is marked obsolete.")
                     continue
 
                 # Step 6: Deterministic condition safety
@@ -155,7 +169,7 @@ class CacheDecisionPipeline:
                 db.commit()
                 break
 
-        # Step 12 or 13: Final answer & Fallback
+        # Step 12 or 13: Final answer & Grounded Fallback
         total_latency_ms = (time.perf_counter() - start_time) * 1000.0
         
         if chosen_hit:
@@ -163,16 +177,80 @@ class CacheDecisionPipeline:
             returned_answer = chosen_hit.answer
             is_cached = True
             provider_used = "cache"
+            
+            pol_obj = db.query(Policy).filter(Policy.policy_id == chosen_hit.policy_id).first()
+            policy_id = chosen_hit.policy_id
+            policy_version = chosen_hit.policy_version
+            source_document = pol_obj.name if pol_obj else f"Policy {chosen_hit.policy_id}"
+            source_citation = f"Policy {chosen_hit.policy_id} (Version {chosen_hit.policy_version}) - Jurisdiction: {chosen_hit.jurisdiction}, Scope: {chosen_hit.employee_category}"
         else:
             decision = "CACHE_MISS"
             is_cached = False
             fallback_res = llm_service.generate_response(db=db, query=query, domain=domain_filter)
             returned_answer = fallback_res["answer"]
             provider_used = fallback_res["provider"]
+            policy_id = fallback_res.get("policy_id")
+            policy_version = fallback_res.get("policy_version")
+            source_citation = fallback_res.get("source_citation")
+            source_document = fallback_res.get("source_document")
             total_latency_ms = (time.perf_counter() - start_time) * 1000.0
 
-        # Step 14: Persist Audit Log
+            # Dynamic Write-on-Miss: automatically remember grounded policy answers
+            # The next time this query (or an equivalent one) is asked, it returns a CACHE HIT in <5ms,
+            # reducing model calls and saving inference cost!
+            if (
+                policy_id
+                and returned_answer
+                and not returned_answer.startswith("According to Kaveri Tech Solutions")
+                and not returned_answer.startswith("No company policy")
+            ):
+                try:
+                    existing_entry = db.query(CachedEntry).filter(
+                        CachedEntry.normalized_question == norm_query,
+                        CachedEntry.is_active == True
+                    ).first()
+
+                    if existing_entry:
+                        if (
+                            existing_entry.faiss_id is None
+                            or existing_entry.faiss_id not in faiss_service.id_map
+                            or existing_entry.faiss_id >= faiss_service.total_vectors()
+                        ):
+                            emb = embedding_service.encode(norm_query, normalize=True)
+                            existing_entry.faiss_id = faiss_service.add_vector(existing_entry.id, emb)
+                            db.commit()
+                    else:
+                        pol_rec = db.query(Policy).filter(Policy.policy_id == policy_id).first()
+                        new_entry = CachedEntry(
+                            question=query,
+                            normalized_question=norm_query,
+                            answer=returned_answer,
+                            policy_id=policy_id,
+                            policy_version=policy_version or (pol_rec.current_version if pol_rec else "1.0"),
+                            domain=pol_rec.domain if pol_rec else (domain_filter or "HR"),
+                            jurisdiction=pol_rec.jurisdiction if pol_rec else "INDIA",
+                            employee_category=pol_rec.employee_category if pol_rec else "ALL",
+                            numerical_limits=extract_policy_conditions(norm_query).numerical_limits,
+                            is_verified=True,
+                            is_active=True,
+                            hit_count=0
+                        )
+                        db.add(new_entry)
+                        db.commit()
+                        db.refresh(new_entry)
+
+                        # Immediately encode and index into FAISS
+                        emb = embedding_service.encode(norm_query, normalize=True)
+                        new_entry.faiss_id = faiss_service.add_vector(new_entry.id, emb)
+                        db.commit()
+                except Exception as ex:
+                    print(f"Warning: Auto-cache on miss error: {ex}")
+                    db.rollback()
+
+        # Step 14: Persist Comprehensive Audit Log
         audit_log = QueryAuditLog(
+            user_id=user_id,
+            conversation_id=conversation_id,
             query_text=query,
             domain_filter=domain_filter,
             decision=decision,
@@ -186,6 +264,10 @@ class CacheDecisionPipeline:
             applied_threshold=active_threshold,
             policy_condition_passed=best_candidate_info["policy_condition_passed"] if best_candidate_info else False,
             condition_mismatches=best_candidate_info["condition_mismatches"] if best_candidate_info else [],
+            policy_id=policy_id,
+            policy_version=policy_version,
+            source_citation=source_citation,
+            source_document=source_document,
             returned_answer=returned_answer,
             is_cached_result=is_cached,
             provider_used=provider_used,
@@ -206,7 +288,11 @@ class CacheDecisionPipeline:
             "active_threshold": active_threshold,
             "lookup_latency_ms": round(lookup_latency_ms, 2),
             "total_latency_ms": round(total_latency_ms, 2),
-            "log_id": audit_log.id
+            "log_id": audit_log.id,
+            "policy_id": policy_id,
+            "policy_version": policy_version,
+            "source_citation": source_citation,
+            "source_document": source_document
         }
 
 cache_pipeline = CacheDecisionPipeline()

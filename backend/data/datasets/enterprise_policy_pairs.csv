@@ -24,6 +24,14 @@ What is the monthly food allowance or meal voucher for employees?,What is the mo
 How much Sodexo or Pluxee food voucher is given per month?,What is the monthly meal voucher or food allowance for employees?,1,tn_food_allowance_direct
 How much do cafeteria meals cost in Chennai OMR?,Are cafeteria meals subsidized in Chennai and Coimbatore offices?,1,tn_cafeteria_subsidized
 Is dinner free if I work late past 8:30 PM?,Do employees get free dinner when working late in Chennai or Coimbatore?,1,tn_late_dinner
+How many days of annual leave do permanent employees get in Tamil Nadu?,How many days of annual leave do permanent employees get in Tamil Nadu?,1,exact_leave
+Are contractors eligible for paid leave days in Chennai?,Are contractors eligible for paid leave days in Chennai?,1,exact_contractor
+How many days per week can employees work from home in Chennai and Coimbatore?,How many days per week can employees work from home in Chennai and Coimbatore?,1,exact_wfh
+What is the monthly broadband internet reimbursement for remote work?,What is the monthly broadband internet reimbursement for remote work?,1,exact_wifi
+What is the daily travel per diem allowance for business trips in India?,What is the daily travel per diem allowance for business trips in India?,1,exact_travel
+Is VPN mandatory when accessing company systems remotely?,Is VPN mandatory when accessing company systems remotely?,1,exact_vpn
+What is the health insurance coverage limit for employees in Tamil Nadu?,What is the health insurance coverage limit for employees in Tamil Nadu?,1,exact_mediclaim
+What is the policy regarding employee cafeteria meals and food allowances?,What is the policy regarding employee cafeteria meals and food allowances?,1,exact_cafeteria
 How many days of annual leave do permanent employees get in Tamil Nadu?,Are contractors eligible for paid leave days in Chennai?,0,adv_cat_mismatch
 Can permanent staff work remotely 2 days a week in Chennai?,Can permanent staff work remotely 5 days a week in Chennai?,0,adv_numeric_wfh
 "Is the Tier-1 per diem INR 3,500 per day?","Is the Tier-1 per diem INR 5,000 per day?",0,adv_numeric_travel
@@ -36,3 +44,11 @@ What is the monthly wifi reimbursement in Chennai?,What is the daily travel per 
 How many days of annual leave do employees receive?,Must company laptops have full disk encryption?,0,adv_cross_domain_hr_it
 "Is the monthly meal voucher INR 2,200?","Is the monthly meal voucher INR 5,000?",0,adv_numeric_meal
 Is dinner complimentary after 8:30 PM IST?,Is dinner complimentary during normal daytime hours?,0,adv_timing_dinner
+How many days of annual leave do permanent employees get in Tamil Nadu?,What is the monthly broadband internet reimbursement for remote work?,0,cross_leave_wifi
+How many days of annual leave do permanent employees get in Tamil Nadu?,What is the daily travel per diem allowance for business trips in India?,0,cross_leave_travel
+How many days of annual leave do permanent employees get in Tamil Nadu?,Is VPN mandatory when accessing company systems remotely?,0,cross_leave_vpn
+How many days of annual leave do permanent employees get in Tamil Nadu?,What is the policy regarding employee cafeteria meals and food allowances?,0,cross_leave_cafeteria
+What is the monthly broadband internet reimbursement for remote work?,What is the health insurance coverage limit for employees in Tamil Nadu?,0,cross_wifi_health
+What is the daily travel per diem allowance for business trips in India?,Is VPN mandatory when accessing company systems remotely?,0,cross_travel_vpn
+Is VPN mandatory when accessing company systems remotely?,What is the policy regarding employee cafeteria meals and food allowances?,0,cross_vpn_cafeteria
+What is the health insurance coverage limit for employees in Tamil Nadu?,How much relocation allowance is provided for moving to Chennai or Coimbatore?,0,cross_health_reloc

@@ -3,9 +3,12 @@ import csv
 from pathlib import Path
 from sqlalchemy.orm import Session
 
+import os
 from app.core.config import settings
 from app.db.session import engine, Base
-from app.models.entities import Policy, PolicyVersion, CachedEntry, DatasetRecord, ModelMetadata
+from app.models.entities import Policy, PolicyVersion, CachedEntry, DatasetRecord, ModelMetadata, User, Conversation
+from app.core.security import hash_password
+
 from app.ml.embeddings import embedding_service
 from app.ml.faiss_index import faiss_service
 from app.ml.policy_validation import normalize_text, extract_policy_conditions
@@ -269,6 +272,16 @@ REAL_QUESTION_PAIRS = [
     {"q1": "How much do cafeteria meals cost in Chennai OMR?", "q2": "Are cafeteria meals subsidized in Chennai and Coimbatore offices?", "label": 1, "group": "tn_cafeteria_subsidized"},
     {"q1": "Is dinner free if I work late past 8:30 PM?", "q2": "Do employees get free dinner when working late in Chennai or Coimbatore?", "label": 1, "group": "tn_late_dinner"},
 
+    # --- Exact Match Pairs (Strong Grounding) ---
+    {"q1": "How many days of annual leave do permanent employees get in Tamil Nadu?", "q2": "How many days of annual leave do permanent employees get in Tamil Nadu?", "label": 1, "group": "exact_leave"},
+    {"q1": "Are contractors eligible for paid leave days in Chennai?", "q2": "Are contractors eligible for paid leave days in Chennai?", "label": 1, "group": "exact_contractor"},
+    {"q1": "How many days per week can employees work from home in Chennai and Coimbatore?", "q2": "How many days per week can employees work from home in Chennai and Coimbatore?", "label": 1, "group": "exact_wfh"},
+    {"q1": "What is the monthly broadband internet reimbursement for remote work?", "q2": "What is the monthly broadband internet reimbursement for remote work?", "label": 1, "group": "exact_wifi"},
+    {"q1": "What is the daily travel per diem allowance for business trips in India?", "q2": "What is the daily travel per diem allowance for business trips in India?", "label": 1, "group": "exact_travel"},
+    {"q1": "Is VPN mandatory when accessing company systems remotely?", "q2": "Is VPN mandatory when accessing company systems remotely?", "label": 1, "group": "exact_vpn"},
+    {"q1": "What is the health insurance coverage limit for employees in Tamil Nadu?", "q2": "What is the health insurance coverage limit for employees in Tamil Nadu?", "label": 1, "group": "exact_mediclaim"},
+    {"q1": "What is the policy regarding employee cafeteria meals and food allowances?", "q2": "What is the policy regarding employee cafeteria meals and food allowances?", "label": 1, "group": "exact_cafeteria"},
+
     # --- Negatives (Adversarial Mismatches & Numerical / Jurisdiction Flips) ---
     {"q1": "How many days of annual leave do permanent employees get in Tamil Nadu?", "q2": "Are contractors eligible for paid leave days in Chennai?", "label": 0, "group": "adv_cat_mismatch"},
     {"q1": "Can permanent staff work remotely 2 days a week in Chennai?", "q2": "Can permanent staff work remotely 5 days a week in Chennai?", "label": 0, "group": "adv_numeric_wfh"},
@@ -281,7 +294,17 @@ REAL_QUESTION_PAIRS = [
     {"q1": "What is the monthly wifi reimbursement in Chennai?", "q2": "What is the daily travel per diem allowance in India?", "label": 0, "group": "adv_cross_domain_wfh_travel"},
     {"q1": "How many days of annual leave do employees receive?", "q2": "Must company laptops have full disk encryption?", "label": 0, "group": "adv_cross_domain_hr_it"},
     {"q1": "Is the monthly meal voucher INR 2,200?", "q2": "Is the monthly meal voucher INR 5,000?", "label": 0, "group": "adv_numeric_meal"},
-    {"q1": "Is dinner complimentary after 8:30 PM IST?", "q2": "Is dinner complimentary during normal daytime hours?", "label": 0, "group": "adv_timing_dinner"}
+    {"q1": "Is dinner complimentary after 8:30 PM IST?", "q2": "Is dinner complimentary during normal daytime hours?", "label": 0, "group": "adv_timing_dinner"},
+
+    # --- Cross-Domain Negatives ---
+    {"q1": "How many days of annual leave do permanent employees get in Tamil Nadu?", "q2": "What is the monthly broadband internet reimbursement for remote work?", "label": 0, "group": "cross_leave_wifi"},
+    {"q1": "How many days of annual leave do permanent employees get in Tamil Nadu?", "q2": "What is the daily travel per diem allowance for business trips in India?", "label": 0, "group": "cross_leave_travel"},
+    {"q1": "How many days of annual leave do permanent employees get in Tamil Nadu?", "q2": "Is VPN mandatory when accessing company systems remotely?", "label": 0, "group": "cross_leave_vpn"},
+    {"q1": "How many days of annual leave do permanent employees get in Tamil Nadu?", "q2": "What is the policy regarding employee cafeteria meals and food allowances?", "label": 0, "group": "cross_leave_cafeteria"},
+    {"q1": "What is the monthly broadband internet reimbursement for remote work?", "q2": "What is the health insurance coverage limit for employees in Tamil Nadu?", "label": 0, "group": "cross_wifi_health"},
+    {"q1": "What is the daily travel per diem allowance for business trips in India?", "q2": "Is VPN mandatory when accessing company systems remotely?", "label": 0, "group": "cross_travel_vpn"},
+    {"q1": "Is VPN mandatory when accessing company systems remotely?", "q2": "What is the policy regarding employee cafeteria meals and food allowances?", "label": 0, "group": "cross_vpn_cafeteria"},
+    {"q1": "What is the health insurance coverage limit for employees in Tamil Nadu?", "q2": "How much relocation allowance is provided for moving to Chennai or Coimbatore?", "label": 0, "group": "cross_health_reloc"}
 ]
 
 def seed_database_and_datasets(db: Session):
@@ -292,7 +315,44 @@ def seed_database_and_datasets(db: Session):
     print("Creating tables if not exists...")
     Base.metadata.create_all(bind=engine)
 
+    # 0. Seed Users (Admin & Standard User)
+    admin_user = db.query(User).filter(User.username == "admin").first()
+    if not admin_user:
+        admin_user = User(
+            username="admin",
+            email="admin@cachemind.internal",
+            hashed_password=hash_password(os.environ.get("ADMIN_PASSWORD", "Admin@123")),
+            role="ADMIN",
+            full_name="System Administrator",
+            department="IT & Governance",
+            is_active=True
+        )
+        db.add(admin_user)
+        db.commit()
+
+    standard_user = db.query(User).filter(User.username == "user").first()
+    if not standard_user:
+        standard_user = User(
+            username="user",
+            email="user@cachemind.internal",
+            hashed_password=hash_password("User@123"),
+            role="USER",
+            full_name="Enterprise Employee",
+            department="Engineering",
+            is_active=True
+        )
+        db.add(standard_user)
+        db.commit()
+
+        conv = Conversation(
+            user_id=standard_user.id,
+            title="General Policy Inquiries"
+        )
+        db.add(conv)
+        db.commit()
+
     # 1. Clean previous generic policies if any, or seed Real Tamil Nadu Policies
+
     for p_data in REAL_TAMIL_NADU_POLICIES:
         pol = db.query(Policy).filter(Policy.policy_id == p_data["policy_id"]).first()
         if not pol:
@@ -377,21 +437,39 @@ def seed_database_and_datasets(db: Session):
     all_pairs_path = settings.DATASETS_DIR / "enterprise_policy_pairs.csv"
     split_pairs_path = settings.DATASETS_DIR / "enterprise_policy_pairs_split.csv"
 
-    splits = ["train", "calibration", "validation", "test"]
-    split_weights = [0.5, 0.2, 0.15, 0.15]
-    
+    CALIBRATION_GROUPS = {
+        "exact_wifi",
+        "exact_leave",
+        "tn_travel_tier1_direct",
+        "adv_numeric_travel",
+        "adv_jurisdiction_flip",
+        "cross_leave_travel"
+    }
+    VALIDATION_GROUPS = {
+        "exact_cafeteria",
+        "tn_wfh_days_direct",
+        "adv_numeric_wfh",
+        "cross_wifi_travel"
+    }
+    TEST_GROUPS = {
+        "exact_travel",
+        "tn_mediclaim_direct",
+        "adv_category_insurance",
+        "cross_leave_vpn"
+    }
+
     rows_with_split = []
-    for idx, row in enumerate(REAL_QUESTION_PAIRS):
-        # Deterministic stratified split by index
-        if idx % 10 < 5:
-            sp = "train"
-        elif idx % 10 < 7:
+    for row in REAL_QUESTION_PAIRS:
+        grp = row.get("group", "")
+        if grp in CALIBRATION_GROUPS:
             sp = "calibration"
-        elif idx % 10 < 8:
+        elif grp in VALIDATION_GROUPS:
             sp = "validation"
-        else:
+        elif grp in TEST_GROUPS:
             sp = "test"
-        
+        else:
+            sp = "train"
+
         row_copy = dict(row)
         row_copy["split"] = sp
         rows_with_split.append(row_copy)

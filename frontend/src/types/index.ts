@@ -1,3 +1,20 @@
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  role: 'USER' | 'ADMIN';
+  full_name: string;
+  department: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
+}
+
 export interface CandidateInfo {
   cache_id: string;
   faiss_id: number;
@@ -22,10 +39,14 @@ export interface QueryResponse {
   lookup_latency_ms: number;
   total_latency_ms: number;
   log_id?: string;
+  policy_id?: string | null;
+  policy_version?: string | null;
+  source_citation?: string | null;
+  source_document?: string | null;
 }
 
 export interface QueryCheckResponse {
-  status: string; // "HIT" | "CACHE_MISS" | "NEEDS_CONFIRMATION"
+  status: string; // "HIT" | "CACHE_MISS" | "NEEDS_CONFIRMATION" | "GREETING"
   is_cached: boolean;
   needs_confirmation: boolean;
   original_query: string;
@@ -36,6 +57,9 @@ export interface QueryCheckResponse {
   candidate?: CandidateInfo | null;
   lookup_latency_ms?: number | null;
   total_latency_ms?: number | null;
+  policy_id?: string | null;
+  policy_version?: string | null;
+  source_citation?: string | null;
 }
 
 export interface DashboardSummary {
@@ -81,8 +105,22 @@ export interface Policy {
   employee_category: string;
   current_version: string;
   content: string;
+  status?: string;
+  effective_date?: string;
+  expiry_date?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface PolicyPreview {
+  extracted_text: string;
+  detected_domain: string;
+  suggested_policy_id: string;
+  suggested_name: string;
+  jurisdiction: string;
+  employee_category: string;
+  total_characters: number;
+  clauses: string[];
 }
 
 export interface ModelStatusResponse {
@@ -99,6 +137,27 @@ export interface ModelStatusResponse {
   };
   classifier: any;
   calibrator: any;
+  active_registry_version?: string;
+}
+
+export interface ModelArtifactVersion {
+  id: string;
+  version_tag: string;
+  classifier_path: string;
+  calibrator_path: string;
+  faiss_index_path: string;
+  faiss_id_map_path: string;
+  selected_threshold: number;
+  target_fhr: number;
+  observed_fhr: number | null;
+  upper_confidence_bound: number | null;
+  sample_size: number;
+  metrics: any;
+  hyperparameters: any;
+  dataset_version: string;
+  is_active: boolean;
+  created_by: string;
+  created_at: string;
 }
 
 export interface ThresholdResult {
@@ -150,6 +209,7 @@ export interface ClusterAnalyticsResponse {
 
 export interface AuditLog {
   id: string;
+  user_id?: string | null;
   query_text: string;
   domain_filter: string | null;
   decision: string;
@@ -161,12 +221,83 @@ export interface AuditLog {
   applied_threshold: number | null;
   policy_condition_passed: boolean;
   condition_mismatches: string[];
+  policy_id?: string | null;
+  policy_version?: string | null;
+  source_citation?: string | null;
+  source_document?: string | null;
   returned_answer: string;
   is_cached_result: boolean;
   provider_used: string;
   lookup_latency_ms: number;
   total_latency_ms: number;
   created_at: string;
+}
+
+export interface UserHistoryItem {
+  id: string;
+  query_text: string;
+  decision: string;
+  is_cached_result: boolean;
+  returned_answer: string;
+  provider_used: string;
+  policy_id?: string | null;
+  policy_version?: string | null;
+  source_citation?: string | null;
+  total_latency_ms: number;
+  created_at: string;
+}
+
+export interface UserAnalytics {
+  total_queries: number;
+  cache_hits: number;
+  cache_misses: number;
+  cache_hit_ratio: number;
+  avg_latency_ms: number;
+  frequently_accessed_topics: { topic: string; count: number }[];
+}
+
+export interface FeedbackItem {
+  id: string;
+  user_id: string;
+  log_id?: string | null;
+  query_text: string;
+  answer_text: string;
+  rating: 'helpful' | 'not_helpful';
+  comment?: string | null;
+  is_reported_incorrect: boolean;
+  report_reason?: string | null;
+  status: string; // 'pending' | 'reviewed' | 'resolved'
+  admin_notes?: string | null;
+  created_at: string;
+}
+
+export interface FavoriteItem {
+  id: string;
+  user_id: string;
+  query_text: string;
+  answer: string;
+  policy_id?: string | null;
+  policy_version?: string | null;
+  is_cached: boolean;
+  created_at: string;
+}
+
+export interface Conversation {
+  id: string;
+  user_id: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CandidatePair {
+  id?: string;
+  q1: string;
+  q2: string;
+  label: number;
+  group: string;
+  pair_type: string;
+  is_approved?: boolean;
 }
 
 export interface SettingsData {

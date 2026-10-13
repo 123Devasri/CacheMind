@@ -171,17 +171,25 @@ class GroundedCompanyPolicyService:
 
         # C) High-accuracy Local Semantic Grounding (Zero Mock Data, Strictly Derived from Admin Policies)
         answer_text = (
-            f"Under Kaveri Tech Solutions policy {top_chunk['policy_id']} ({top_chunk['policy_name']}):\n\n"
+            f"Under policy {top_chunk['policy_id']} ({top_chunk['policy_name']}):\n\n"
             f"{top_chunk['text']}"
         )
         if len(relevant_chunks) > 1 and relevant_chunks[1]["policy_id"] == top_chunk["policy_id"]:
             answer_text += f"\n\nAdditionally: {relevant_chunks[1]['text']}"
 
+        top_pol = db.query(Policy).filter(Policy.policy_id == top_chunk["policy_id"]).first()
+        pol_version = top_pol.current_version if top_pol else "1.0"
+
         return {
             "provider": "grounded_company_policy_engine",
             "model": "all-MiniLM-L6-v2-rag",
             "is_mock": False,
-            "answer": answer_text
+            "answer": answer_text,
+            "policy_id": top_chunk["policy_id"],
+            "policy_version": pol_version,
+            "source_document": top_chunk["policy_name"],
+            "source_citation": f"Clause from {top_chunk['policy_id']} (v{pol_version}): {top_chunk['text'][:180]}"
         }
 
 llm_service = GroundedCompanyPolicyService()
+

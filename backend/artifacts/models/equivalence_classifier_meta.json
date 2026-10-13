@@ -7,16 +7,16 @@
     "random_state": 42
   },
   "coefficients": {
-    "cosine_similarity": 0.710551917552948,
-    "token_jaccard_similarity": -0.5842270851135254,
-    "relative_length_diff": 0.6432211399078369,
-    "domain_match": 0.6175885200500488,
+    "cosine_similarity": 0.8255359530448914,
+    "token_jaccard_similarity": 0.26989635825157166,
+    "relative_length_diff": 0.7574067711830139,
+    "domain_match": 0.636757493019104,
     "jurisdiction_match": 0.0,
-    "employee_category_match": 0.7597789764404297,
-    "numerical_conflict": -0.6550323963165283,
+    "employee_category_match": 0.7404497265815735,
+    "numerical_conflict": -1.0547641515731812,
     "negation_conflict": 0.0
   },
-  "intercept": 0.5737264752388,
+  "intercept": 0.23730801045894623,
   "feature_names": [
     "cosine_similarity",
     "token_jaccard_similarity",
@@ -28,20 +28,20 @@
     "negation_conflict"
   ],
   "metrics": {
-    "precision": 0.9375,
-    "recall": 1.0,
-    "f1": 0.967741935483871,
-    "roc_auc": 0.9600000000000001,
+    "precision": 0.9230769230769231,
+    "recall": 0.9230769230769231,
+    "f1": 0.9230769230769231,
+    "roc_auc": 0.9120879120879122,
     "confusion_matrix": [
       [
-        4,
-        1
+        12,
+        2
       ],
       [
-        0,
-        15
+        2,
+        24
       ]
     ],
-    "sample_count": 20
+    "sample_count": 40
   }
 }

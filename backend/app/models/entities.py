@@ -7,17 +7,50 @@ from app.db.session import Base
 def generate_uuid():
     return str(uuid.uuid4())
 
+class User(Base):
+    __tablename__ = "users"
+    
+    id = Column(String, primary_key=True, default=generate_uuid)
+    username = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    role = Column(String, default="USER", index=True, nullable=False) # "USER", "ADMIN"
+    full_name = Column(String, default="")
+    department = Column(String, default="General")
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    
+    conversations = relationship("Conversation", back_populates="user", cascade="all, delete-orphan")
+    feedbacks = relationship("UserFeedback", back_populates="user", cascade="all, delete-orphan")
+    favorites = relationship("UserFavorite", back_populates="user", cascade="all, delete-orphan")
+
+
+class Conversation(Base):
+    __tablename__ = "conversations"
+    
+    id = Column(String, primary_key=True, default=generate_uuid)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
+    title = Column(String, default="New Conversation")
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    
+    user = relationship("User", back_populates="conversations")
+
+
 class Policy(Base):
     __tablename__ = "policies"
     
     id = Column(String, primary_key=True, default=generate_uuid)
-    policy_id = Column(String, unique=True, index=True, nullable=False) # e.g. "HR-LEAVE-01"
+    policy_id = Column(String, unique=True, index=True, nullable=False) # e.g. "TN-HR-LEAVE-01"
     name = Column(String, nullable=False)
     domain = Column(String, index=True, nullable=False) # HR, IT, FINANCE
-    jurisdiction = Column(String, default="GLOBAL") # US, INDIA, UK, GLOBAL
+    jurisdiction = Column(String, default="INDIA") # INDIA, US, UK, GLOBAL
     employee_category = Column(String, default="ALL") # FULL_TIME, CONTRACTOR, INTERN, ALL
     current_version = Column(String, default="1.0")
     content = Column(Text, nullable=False)
+    status = Column(String, default="active") # "active", "obsolete", "draft"
+    effective_date = Column(DateTime, default=datetime.datetime.utcnow)
+    expiry_date = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     
@@ -53,9 +86,9 @@ class CachedEntry(Base):
     domain = Column(String, index=True, nullable=False)
     
     # Structured condition metadata
-    jurisdiction = Column(String, default="GLOBAL")
+    jurisdiction = Column(String, default="INDIA")
     employee_category = Column(String, default="ALL")
-    numerical_limits = Column(JSON, default=dict) # e.g. {"days": 20, "amount": 1000}
+    numerical_limits = Column(JSON, default=dict) # e.g. {"days": 18, "amount": 1000}
     effective_period = Column(String, nullable=True)
     exceptions = Column(JSON, default=list)
     
@@ -72,10 +105,13 @@ class QueryAuditLog(Base):
     __tablename__ = "query_audit_logs"
     
     id = Column(String, primary_key=True, default=generate_uuid)
+    user_id = Column(String, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    conversation_id = Column(String, ForeignKey("conversations.id", ondelete="SET NULL"), nullable=True, index=True)
+    
     query_text = Column(Text, nullable=False)
     domain_filter = Column(String, nullable=True)
     
-    decision = Column(String, nullable=False) # "HIT", "REJECTED_POLICY_MISMATCH", "REJECTED_LOW_SCORE", "REJECTED_SAFETY", "FALLBACK_MOCK", "FALLBACK_LLM"
+    decision = Column(String, nullable=False) # "HIT", "CACHE_MISS", "REJECTED_POLICY_MISMATCH", etc.
     rejection_reasons = Column(JSON, default=list)
     
     candidate_cache_id = Column(String, ForeignKey("cached_entries.id"), nullable=True)
@@ -92,13 +128,53 @@ class QueryAuditLog(Base):
     policy_condition_passed = Column(Boolean, default=False)
     condition_mismatches = Column(JSON, default=list)
     
+    # Policy Citation & Version
+    policy_id = Column(String, nullable=True)
+    policy_version = Column(String, nullable=True)
+    source_citation = Column(Text, nullable=True)
+    source_document = Column(String, nullable=True)
+    
     returned_answer = Column(Text, nullable=False)
     is_cached_result = Column(Boolean, default=False)
-    provider_used = Column(String, default="cache") # "cache", "local_mock", "openai"
+    provider_used = Column(String, default="cache") # "cache", "grounded_company_policy_engine", "openai", "grok"
     
     lookup_latency_ms = Column(Float, default=0.0)
     total_latency_ms = Column(Float, default=0.0)
     created_at = Column(DateTime, default=datetime.datetime.utcnow, index=True)
+
+
+class UserFeedback(Base):
+    __tablename__ = "user_feedbacks"
+    
+    id = Column(String, primary_key=True, default=generate_uuid)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
+    log_id = Column(String, ForeignKey("query_audit_logs.id", ondelete="SET NULL"), nullable=True, index=True)
+    query_text = Column(Text, nullable=False)
+    answer_text = Column(Text, nullable=False)
+    rating = Column(String, nullable=False) # "helpful", "not_helpful"
+    comment = Column(Text, nullable=True)
+    is_reported_incorrect = Column(Boolean, default=False)
+    report_reason = Column(String, nullable=True)
+    status = Column(String, default="pending") # "pending", "reviewed", "resolved"
+    admin_notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    
+    user = relationship("User", back_populates="feedbacks")
+
+
+class UserFavorite(Base):
+    __tablename__ = "user_favorites"
+    
+    id = Column(String, primary_key=True, default=generate_uuid)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
+    query_text = Column(Text, nullable=False)
+    answer = Column(Text, nullable=False)
+    policy_id = Column(String, nullable=True)
+    policy_version = Column(String, nullable=True)
+    is_cached = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    
+    user = relationship("User", back_populates="favorites")
 
 
 class ModelMetadata(Base):
@@ -113,6 +189,32 @@ class ModelMetadata(Base):
     metrics = Column(JSON, default=dict)
     last_trained_at = Column(DateTime, nullable=True)
     error_message = Column(Text, nullable=True)
+
+
+class ModelArtifactVersion(Base):
+    """
+    Model Registry Table: Tracks versioned snapshots of ML pipeline artifacts
+    for safe atomic publication, audit tracking, and instantaneous rollback.
+    """
+    __tablename__ = "model_artifact_versions"
+    
+    id = Column(String, primary_key=True, default=generate_uuid)
+    version_tag = Column(String, unique=True, index=True, nullable=False) # e.g. "v1.0.0", "v1.0.1"
+    classifier_path = Column(String, nullable=False)
+    calibrator_path = Column(String, nullable=False)
+    faiss_index_path = Column(String, nullable=False)
+    faiss_id_map_path = Column(String, nullable=False)
+    selected_threshold = Column(Float, nullable=False, default=0.50)
+    target_fhr = Column(Float, nullable=False, default=0.01)
+    observed_fhr = Column(Float, nullable=True)
+    upper_confidence_bound = Column(Float, nullable=True)
+    sample_size = Column(Integer, default=0)
+    metrics = Column(JSON, default=dict)
+    hyperparameters = Column(JSON, default=dict)
+    dataset_version = Column(String, default="v1.0")
+    is_active = Column(Boolean, default=False, index=True)
+    created_by = Column(String, default="administrator")
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 
 class ThresholdEvaluationRun(Base):

@@ -1,178 +1,168 @@
-# Governed Semantic Cache for Enterprise AI Assistants
+# CacheMind: Governed Semantic Cache for Enterprise AI Assistants
 
-A production-grade, end-to-end Machine Learning application providing an intelligent, policy-governed semantic cache for enterprise assistants (HR, IT, Finance). Designed to reduce redundant LLM inference costs and latency while strictly enforcing deterministic policy constraints and statistical safety bounds on False-Hit Rate (FHR).
-
----
-
-## 1. System Architecture & ML Pipeline
-
-```
-Incoming Query
-    │
-    ▼
-[1] Text Normalization & Cleaning
-    │
-    ▼
-[2] Policy Scope & Condition Extraction (Regex & Pydantic)
-    │  ├─ Domain (HR / IT / Finance)
-    │  ├─ Jurisdiction (US / India / UK / Global)
-    │  ├─ Employee Category (Full-Time / Contractor / Intern)
-    │  └─ Numerical Limits & Negation Checks
-    │
-    ▼
-[3] Sentence Transformer Embedding (all-MiniLM-L6-v2, 384-D, L2-Normalized)
-    │
-    ▼
-[4] Dense FAISS Retrieval (IndexFlatIP Inner Product = Cosine Similarity)
-    │  └─ Min Similarity Filter & Top-K Candidates
-    │
-    ▼
-[5] Deterministic Policy-Safety Guard (Mandatory Check)
-    │  ├─ Failed? ──► REJECT ──► LLM / Local Mock Fallback
-    │  └─ Passed? ──► Proceed to Classification
-    │
-    ▼
-[6] Feature Vector Generation (8 Handcrafted Domain Features)
-    │
-    ▼
-[7] Logistic Regression Equivalence Classifier (StandardScaler + L2 Pipeline)
-    │
-    ▼
-[8] Isotonic Regression Probability Calibration (Non-Parametric Posterior P(y=1|s))
-    │
-    ▼
-[9] Statistical Acceptance Threshold (Clopper-Pearson Exact Binomial Upper Bound)
-    │  ├─ Calibrated Probability >= Active Threshold? ──► CACHE HIT (Return Verified Answer)
-    │  └─ Below Threshold? ───────────────────────────► CACHE MISS (Fallback Inference)
-    │
-    ▼
-[10] Real-Time Query Audit Logging & Latency Tracking
-```
-
-*Note: Unsupervised **K-Means Clustering** with 2D PCA projection runs independently over stored query embeddings as an analytical monitor for recurring employee policy inquiries; it does not approve cache hits.*
+An enterprise-grade, end-to-end Machine Learning and AI governance system providing a policy-governed semantic cache for organizational assistants (HR, Finance, IT, Operations). Built to eliminate redundant generative inference costs, slash response latencies from seconds to single-digit milliseconds, and strictly enforce deterministic policy boundaries with exact statistical false-hit rate guarantees.
 
 ---
 
-## 2. Technology Stack
+## 1. Fixed ML Model Stack (Strictly Implemented)
 
-- **Machine Learning & NLP**:
-  - `sentence-transformers` (`all-MiniLM-L6-v2`)
-  - `faiss-cpu` (`IndexFlatIP`, Cosine Inner Product search)
-  - `scikit-learn` (`LogisticRegression`, `IsotonicRegression`, `KMeans`, `StandardScaler`, `PCA`)
-  - `scipy.stats` (Clopper-Pearson exact binomial confidence bounds)
-  - `numpy` & `csv`
+The core machine learning pipeline strictly adheres to established algorithms without custom LLM training or heavy third-party dependencies:
 
-- **Backend**:
-  - `FastAPI` (Async REST API, OpenAPI Docs)
-  - `Pydantic v2` (Validation schemas & condition parsing)
-  - `SQLAlchemy` (ORM persistence, SQLite default, PostgreSQL compatible)
-  - `pytest` & `httpx` (Automated testing suite)
-
-- **Frontend**:
-  - `React 19` + `Vite` + `TypeScript`
-  - `Tailwind CSS v4`
-  - `Recharts` (Visualizing threshold bounds and query volumes)
-  - `Lucide React` (Clean modern enterprise UI)
-  - `React Router v7`
+1. **Sentence Transformer (`sentence-transformers/all-MiniLM-L6-v2`)**:
+   - Converts natural-language policy questions into 384-dimensional dense semantic embeddings.
+   - Pretrained model cached locally; inference executed on CPU with L2 normalization.
+2. **FAISS Vector Index (`IndexFlatIP`)**:
+   - Efficient dense similarity search retrieving Top-$K$ candidate cached questions.
+   - Exact inner product computation over unit-norm vectors ($\langle \mathbf{u}, \mathbf{v} \rangle = \cos(\mathbf{u}, \mathbf{v})$).
+3. **Logistic Regression Equivalence Classifier**:
+   - Trained on balanced and hard-negative policy query pairs.
+   - Evaluates 8 handcrafted features: cosine similarity, token Jaccard lexical overlap, character length difference, numeric difference, numeric contradiction indicator, category mismatch indicator, jurisdiction mismatch indicator, and negation mismatch indicator.
+4. **Isotonic Regression Probability Calibrator**:
+   - Non-parametric monotonic calibrator fit on a held-out calibration split (preventing topic leakage).
+   - Maps raw decision values into true posterior match probabilities $P(\text{equivalent} \mid s)$.
+5. **Statistical Threshold Safety (Clopper-Pearson Exact Binomial Bound)**:
+   - Evaluates candidate thresholds $\tau$ against held-out validation data.
+   - Computes one-sided 95% confidence upper bound for False-Hit Rate (FHR):
+     $$\text{UCB} = \text{Beta.ppf}(1 - \alpha, k + 1, n - k)$$
+   - Conservative fallback mode is enforced if evaluation evidence is insufficient to guarantee $\text{FHR} \le 1.0\%$.
+6. **K-Means Clustering Topic Discovery**:
+   - Unsupervised clustering of employee queries for administrator analytics and recurring inquiry discovery.
+   - Does not dictate safety decisions.
 
 ---
 
-## 3. Quickstart & Local Setup Guide (Windows PowerShell)
+## 2. Grounded Extractive Answer Service (Zero Paid API Keys Required)
+
+CacheMind includes an internal, provider-independent extractive answer engine:
+- Extracts exact authoritative clauses directly from administrator-approved policy documents.
+- Returns grounded answers with source document titles, policy IDs, versions, and clause citations.
+- If no supported answer exists in approved policy documents, it informs the user that no supported policy was found.
+- Modular provider interface allows plug-in of optional external LLM endpoints (Grok / OpenAI) if keys are provided in settings.
+
+---
+
+## 3. Two Distinct User Roles & Backend RBAC
+
+Security is strictly enforced in the FastAPI backend (`backend/app/api/deps.py`) via bcrypt password hashing and JWT access tokens:
+
+### A. Employee User Workspace (`/` or `/app`)
+- **Natural-Language Chat Interface**: Submit inquiries and receive instant answers.
+- **Explicit Badges**: High-contrast `CACHE HIT` (e.g. 4.2 ms) or `CACHE MISS` (grounded search) indicators.
+- **Source Citations**: Clearly displays source document name, policy code, version, and excerpt.
+- **Answer Feedback & Reporting**: Thumbs up / thumbs down helpfulness ratings, and a 1-click modal to report outdated or incorrect answers to admins.
+- **Personal History & Favorites**: Search personal query history, mark frequently used answers as favorites, or delete personal logs.
+- **Personal Analytics**: View personal queries answered, cache-hit ratio, and latency metrics.
+- **Data Isolation**: Users can never view another user's queries, private conversations, or system-wide admin tools.
+
+### B. Administrator Governance Portal (`/admin`)
+- **User Management**: View all accounts, toggle active/inactive status, and change roles (`USER` $\leftrightarrow$ `ADMIN`).
+- **Policy & Document Governance**:
+  - Upload documents (`.txt`, `.pdf`, `.md`).
+  - **Document Preview Drawer**: Inspect extracted clauses, detected domain, and metadata before publishing.
+  - Policy versioning and deprecation.
+  - **Invalidate Obsolete Cache**: Prunes cache entries linked to obsolete or deactivated policies.
+- **Synthetic Dataset Generation**:
+  - Automatically synthesize labeled positive and adversarial negative pairs from active policies.
+  - Inspect and edit candidate pairs prior to training.
+  - Upload custom CSV question-pair datasets.
+- **Model Registry & 1-Click Rollback**:
+  - Trigger training, calibration, and threshold evaluation with versioned snapshots.
+  - Inspect active Logistic Regression feature weights and calibrator status.
+  - Atomic 1-click rollback to any previously archived model snapshot.
+- **Feedback & Reported Answers Queue**: Audit user reports, update status (`PENDING`, `REVIEWED`, `RESOLVED`, `DISMISSED`), and attach admin notes.
+- **Audit Trail & Governance**: Complete query logs with similarity scores, calibrated probabilities, and 1-click **Export to CSV**.
+- **System Settings**: Configure acceptance thresholds, cache expiry, and external API keys.
+
+---
+
+## 4. Quickstart Guide (Windows PowerShell)
 
 ### Prerequisites
 - Python 3.10+ (Verified on Python 3.11.9)
 - Node.js 18+ and npm (Verified on Node v24.16.0)
 
-### Step 1: Clone & Configure Environment
+### 1-Click Launch
+Run the automated launcher from the project root:
 ```powershell
-cd "ml_pro"
-Copy-Item .env.example .env
+.\start.ps1
 ```
+*(Or double-click `start.bat`)*
 
-### Step 2: Install Backend Dependencies
+Both FastAPI backend (`http://127.0.0.1:8000`) and Vite frontend (`http://localhost:5173`) will launch automatically in separate terminal windows.
+
+---
+
+### Manual Step-by-Step Setup
+
+#### Step 1: Backend Environment & Dependencies
 ```powershell
-cd backend
+cd c:\projects\CacheMind\backend
 pip install -r requirements.txt
-# Alternatively: pip install fastapi uvicorn pydantic pydantic-settings sqlalchemy sentence-transformers faiss-cpu scikit-learn scipy pytest httpx
 ```
 
-### Step 3: Seed Synthetic Policies & Train ML Models
+#### Step 2: Initialize Database, Seed Policies & Train Models
 ```powershell
-# 1. Initialize DB and seed synthetic enterprise policies
+# Seeds default accounts (admin / user), policies, and verified cache entries:
 python -m app.services.seed_service
 
-# 2. Train Logistic Regression, fit Isotonic Calibrator, and evaluate threshold bounds
+# Trains Logistic Regression, fits Isotonic Calibrator, and snapshots registry:
 python -m app.services.training_service
 ```
 
-### Step 4: Run Automated Backend Tests
-Verify all 16 automated test suites (Deterministic safety, Clopper-Pearson bounds, and E2E APIs):
+#### Step 3: Run Backend Tests
+Run the complete automated pytest suite (26/26 tests passing):
 ```powershell
 python -m pytest -v
 ```
 
-### Step 5: Start FastAPI Backend
+#### Step 4: Start Backend Server
 ```powershell
 python app/main.py
-# Backend API will be active at: http://127.0.0.1:8000
-# OpenAPI Interactive Docs at: http://127.0.0.1:8000/docs
 ```
+- API Endpoint: `http://127.0.0.1:8000`
+- Interactive OpenAPI Docs: `http://127.0.0.1:8000/docs`
 
-### Step 6: Start React Frontend
-In a separate PowerShell terminal:
+#### Step 5: Start Frontend
+In a new PowerShell terminal:
 ```powershell
-cd ../frontend
+cd c:\projects\CacheMind\frontend
 npm install
-npm run dev
-# Frontend application will open at: http://localhost:5173
+npm run test     # Runs 6/6 Vitest unit and component tests
+npm run dev      # Launches dev server at http://localhost:5173
 ```
 
 ---
 
-## 4. UI Dashboard Walkthrough
+## 5. Pre-Configured Demo Credentials
 
-1. **Overview Dashboard** (`/`):
-   - Real-time KPIs: Cache Hit Ratio, Average Lookup Latency (ms) vs Fallback Latency (ms), Inference Dollars Saved, and Observed False-Hit Rate (FHR).
-   - Dynamic Bar Chart of cache hits vs fallback queries.
-   - Live status indicators for all ML pipeline models.
+For instant evaluation, the database is pre-seeded with two accounts:
 
-2. **Interactive Query Playground** (`/playground`):
-   - Real-time question testing with quick scenarios (Safe paraphrases vs adversarial condition mismatches).
-   - Side-by-side diagnostic cards showing Cosine Similarity, Logistic Regression score, Isotonic calibrated probability, and deterministic safety checks.
+| Role | Username | Password | Access Level |
+| :--- | :--- | :--- | :--- |
+| **User** | `user` | `User@123` | Employee chat, citations, personal history, favorites, reporting |
+| **Admin** | `admin` | `Admin@123` | Complete governance portal, model registry, policy editor, user management |
 
-3. **Cache Explorer** (`/cache`):
-   - Searchable table of verified policy entries.
-   - Direct button to trigger **FAISS Index Rebuild** with vector status counters.
-   - Form to add new verified policy answers.
-
-4. **ML Models Inspection** (`/models`):
-   - Full technical specifications and weights for `all-MiniLM-L6-v2`, `IndexFlatIP`, `Logistic Regression`, and `Isotonic Regression`.
-
-5. **Dataset & Training Pipeline** (`/training`):
-   - Inspect group-stratified splits (Train 60%, Calibration 20%, Validation 10%, Test 10%) preventing topic leakage.
-   - Action button to trigger model retraining asynchronously.
-
-6. **Threshold Safety Evaluation** (`/thresholds`):
-   - Interactive chart showing candidate thresholds &tau; against Observed FHR and Clopper-Pearson Upper Confidence Bounds.
-   - Academic integrity notice indicating statistical sample size limitations.
-
-7. **Query Clusters** (`/clusters`):
-   - Unsupervised K-Means clustering with 2D PCA projection scatter plot and auto-extracted keyword tags.
-
-8. **Audit Logs** (`/logs`):
-   - Timestamped query trace logs with rejection reasons and one-click **Export to CSV**.
-
-9. **Settings** (`/settings`):
-   - Adjust minimum cosine similarity, top-K candidates, and configure fallback providers (Local Mock or OpenAI).
+The login page (`/login`) also includes **1-Click Quick Demo** buttons for instant access without manual typing.
 
 ---
 
-## 5. Statistical Safety & Academic Defense
+## 6. Automated Test Suites
 
-### Why Clopper-Pearson?
-Standard asymptotic normal approximations for confidence intervals fail when the event rate is near zero (e.g., target 1% False-Hit Rate). The **Clopper-Pearson** method calculates exact binomial confidence bounds using the Beta distribution:
-$$\text{UCB} = \text{Beta.ppf}(1 - \alpha, k + 1, n - k)$$
-Where $k$ is observed false hits, $n$ is total cache hits evaluated, and $\alpha$ is the significance level (0.05 for 95% confidence).
+### Backend Tests (`pytest`, 26 Tests Passing)
+- `tests/test_auth_rbac.py` (6 tests): Registration, bcrypt authentication, JWT token generation, 403 Forbidden enforcement on admin routes, user query history isolation, user favorites & feedback submission.
+- `tests/test_e2e_api.py` (7 tests): Health check, dashboard summary, cache hit verification, numerical adversarial rejection, category adversarial rejection, conversational filler optimization, K-Means clustering.
+- `tests/test_ml_stats.py` (2 tests): Exact Clopper-Pearson binomial confidence bounds, feature engineering calculation.
+- `tests/test_model_registry_rollback.py` (3 tests): Model registry listing & rollback, document preview & versioning, synthetic data candidate generation.
+- `tests/test_safety.py` (8 tests): Deterministic policy guardrails (numerical bounds, jurisdiction matching, employee category matching, negation detection, version consistency).
 
-### Academic Integrity
-When evaluating on small sample sizes ($N < 100$), Clopper-Pearson intervals are mathematically conservative. Rather than falsely claiming a 1.0% FHR, the system honestly reports the exact sample size, observed false hits, and Upper Confidence Bound, activating **conservative fallback mode** until sufficient labeled validation volume is collected.
+### Frontend Tests (`vitest`, 6 Tests Passing)
+- `src/__tests__/auth.test.ts`: LocalStorage token management and client-side role guards.
+- `src/__tests__/cache_decision.test.ts`: Latency verification, cache hit/miss badges, and statistical bound verification.
+- `src/__tests__/auth_page.test.tsx`: Component rendering, branding, and Quick Demo buttons.
+
+---
+
+## 7. License & Credits
+
+Built for enterprise AI governance and cost optimization.
+Synthetic sample data represents fictional entities (Kaveri Tech Solutions Pvt. Ltd., Tamil Nadu, India) for safe demonstration.
