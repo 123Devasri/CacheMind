@@ -40,22 +40,33 @@ def load_dataset_split(split_name: str) -> List[Dict[str, Any]]:
 def generate_features_for_pairs(pairs: List[Dict[str, Any]]) -> tuple[np.ndarray, np.ndarray]:
     if not pairs:
         return np.empty((0, 8), dtype=np.float32), np.empty((0,), dtype=np.int32)
-        
+
+    # Collect normalized texts
+    norm_q1_list = [normalize_text(item["q1"]) for item in pairs]
+    norm_q2_list = [normalize_text(item["q2"]) for item in pairs]
+
+    # Batch encode all unique questions
+    unique_texts = list(dict.fromkeys(norm_q1_list + norm_q2_list))
+    if unique_texts:
+        embs_matrix = embedding_service.encode(unique_texts, normalize=True)
+        emb_lookup = {txt: embs_matrix[i].flatten() for i, txt in enumerate(unique_texts)}
+    else:
+        emb_lookup = {}
+
     X_list = []
     y_list = []
 
-    for item in pairs:
-        q1 = item["q1"]
-        q2 = item["q2"]
+    for idx, item in enumerate(pairs):
+        q1_norm = norm_q1_list[idx]
+        q2_norm = norm_q2_list[idx]
         label = item["label"]
 
-        q1_norm = normalize_text(q1)
-        q2_norm = normalize_text(q2)
-
-        # Embeddings
-        e1 = embedding_service.encode(q1_norm, normalize=True).flatten()
-        e2 = embedding_service.encode(q2_norm, normalize=True).flatten()
-        cos_sim = float(np.dot(e1, e2))
+        e1 = emb_lookup.get(q1_norm)
+        e2 = emb_lookup.get(q2_norm)
+        if e1 is not None and e2 is not None:
+            cos_sim = float(np.dot(e1, e2))
+        else:
+            cos_sim = 0.0
 
         # Conditions
         c1 = extract_policy_conditions(q1_norm)
@@ -86,6 +97,13 @@ def train_and_evaluate_all_models(db: Session, created_by: str = "administrator"
     6. Creates atomic version snapshot in Model Registry.
     7. Persists model metadata and threshold evaluation run to DB.
     """
+    # 0. Build/verify hybrid QQP + Enterprise Policy splits
+    from app.services.dataset_service import build_hybrid_dataset_splits
+    try:
+        build_hybrid_dataset_splits(db, max_qqp=500)
+    except Exception as e:
+        print(f"[TrainingService] Hybrid dataset build notice: {e}")
+
     print("Loading train, calibration, validation, and test splits...")
     train_pairs = load_dataset_split("train")
     cal_pairs = load_dataset_split("calibration")
@@ -95,8 +113,8 @@ def train_and_evaluate_all_models(db: Session, created_by: str = "administrator"
     if len(train_pairs) < 4:
         raise ValueError("Insufficient training pairs in dataset.")
 
-    # 1. Train Classifier
-    print(f"Training Logistic Regression on {len(train_pairs)} training pairs...")
+    # 1. Train Multi-Model Classifier Suite (Decision Tree ID3 + Logistic Regression + k-NN)
+    print(f"Training Multi-Model Classifier Suite on {len(train_pairs)} training pairs...")
     X_train, y_train = generate_features_for_pairs(train_pairs)
     train_res = equivalence_classifier.train(X_train, y_train, C=1.0)
 
@@ -106,7 +124,7 @@ def train_and_evaluate_all_models(db: Session, created_by: str = "administrator"
     raw_cal_scores = np.array([equivalence_classifier.predict_score(x) for x in X_cal])
     cal_res = probability_calibrator.fit(raw_cal_scores, y_cal)
 
-    # 3. Evaluate Thresholds on Validation split
+    # 3. Evaluate Thresholds on Validation split (using 100+ samples for tight Clopper-Pearson bound)
     print(f"Evaluating statistical thresholds on {len(val_pairs)} validation pairs...")
     X_val, y_val = generate_features_for_pairs(val_pairs)
     raw_val_scores = np.array([equivalence_classifier.predict_score(x) for x in X_val])
@@ -131,12 +149,12 @@ def train_and_evaluate_all_models(db: Session, created_by: str = "administrator"
     test_false_hits = int(np.sum((y_test[test_hits] == 0))) if test_n_hits > 0 else 0
     test_observed_fhr = float(test_false_hits / test_n_hits) if test_n_hits > 0 else 0.0
 
-    # 5. Run initial K-Means clustering on cached entries
+    # 5. Run K-Means query clustering (Syllabus Model: Clustering)
     cached_entries = db.query(CachedEntry).filter(CachedEntry.is_active == True).all()
     questions = [c.question for c in cached_entries]
     if len(questions) >= 2:
         embs = embedding_service.encode([c.normalized_question for c in cached_entries], normalize=True)
-        clustering_res = query_clusterer.cluster_queries(questions, embs, n_clusters=3)
+        clustering_res = query_clusterer.cluster_queries(questions, embs, n_clusters=min(5, len(questions)))
     else:
         clustering_res = {"status": "insufficient_data"}
 
@@ -189,6 +207,8 @@ def train_and_evaluate_all_models(db: Session, created_by: str = "administrator"
 
     clf_snapshot = registry_dir / "equivalence_classifier.joblib"
     cal_snapshot = registry_dir / "isotonic_calibrator.joblib"
+    dt_snapshot = registry_dir / "decision_tree_classifier.joblib"
+    knn_snapshot = registry_dir / "knn_classifier.joblib"
     idx_snapshot = registry_dir / "faiss_cache.index"
     map_snapshot = registry_dir / "faiss_id_map.json"
 
@@ -197,6 +217,10 @@ def train_and_evaluate_all_models(db: Session, created_by: str = "administrator"
         shutil.copy2(equivalence_classifier.model_path, clf_snapshot)
     if probability_calibrator.model_path.exists():
         shutil.copy2(probability_calibrator.model_path, cal_snapshot)
+    if (settings.MODELS_DIR / "decision_tree_classifier.joblib").exists():
+        shutil.copy2(settings.MODELS_DIR / "decision_tree_classifier.joblib", dt_snapshot)
+    if (settings.MODELS_DIR / "knn_classifier.joblib").exists():
+        shutil.copy2(settings.MODELS_DIR / "knn_classifier.joblib", knn_snapshot)
     if faiss_service.index_file.exists():
         shutil.copy2(faiss_service.index_file, idx_snapshot)
     if faiss_service.map_file.exists():
@@ -218,6 +242,8 @@ def train_and_evaluate_all_models(db: Session, created_by: str = "administrator"
         sample_size=thresh_eval["sample_size"],
         metrics={
             "classifier": train_res["metrics"],
+            "decision_tree": train_res.get("decision_tree", {}).get("metrics", {}),
+            "knn": train_res.get("knn", {}).get("metrics", {}),
             "calibrator": {
                 "brier_before": cal_res["brier_score_before"],
                 "brier_after": cal_res["brier_score_after"]
@@ -228,7 +254,10 @@ def train_and_evaluate_all_models(db: Session, created_by: str = "administrator"
                 "observed_fhr": test_observed_fhr
             }
         },
-        hyperparameters=train_res["hyperparameters"],
+        hyperparameters={
+            **train_res["hyperparameters"],
+            "active_model": equivalence_classifier.active_model
+        },
         dataset_version="v1.0",
         is_active=True,
         created_by=created_by
@@ -274,6 +303,12 @@ def rollback_to_model_version(db: Session, target_version_tag: str) -> Dict[str,
     # Copy files back to active directory
     shutil.copy2(clf_path, equivalence_classifier.model_path)
     shutil.copy2(cal_path, probability_calibrator.model_path)
+    dt_snapshot = clf_path.parent / "decision_tree_classifier.joblib"
+    knn_snapshot = clf_path.parent / "knn_classifier.joblib"
+    if dt_snapshot.exists():
+        shutil.copy2(dt_snapshot, settings.MODELS_DIR / "decision_tree_classifier.joblib")
+    if knn_snapshot.exists():
+        shutil.copy2(knn_snapshot, settings.MODELS_DIR / "knn_classifier.joblib")
     if idx_path.exists():
         shutil.copy2(idx_path, faiss_service.index_file)
     if map_path.exists():
@@ -282,6 +317,10 @@ def rollback_to_model_version(db: Session, target_version_tag: str) -> Dict[str,
     # Reload memory objects
     equivalence_classifier.load()
     probability_calibrator.load()
+    from app.ml.decision_tree_classifier import decision_tree_classifier
+    from app.ml.knn_classifier import knn_classifier
+    decision_tree_classifier.load()
+    knn_classifier.load()
     faiss_service.load_or_create()
 
     # Update active status in DB

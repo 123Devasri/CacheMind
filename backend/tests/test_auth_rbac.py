@@ -87,7 +87,10 @@ def test_user_query_and_history_isolation():
     user_token = user_res.json()["access_token"]
     headers = {"Authorization": f"Bearer {user_token}"}
 
-    # Submit query as user
+    # Submit query as user (first time seeds dynamic cache on cold start, second hits cache)
+    client.post("/api/user/query", json={
+        "query": "How many days of annual leave do permanent employees get in Tamil Nadu?"
+    }, headers=headers)
     query_res = client.post("/api/user/query", json={
         "query": "How many days of annual leave do permanent employees get in Tamil Nadu?"
     }, headers=headers)

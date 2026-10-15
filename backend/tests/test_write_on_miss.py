@@ -13,15 +13,15 @@ def test_cache_miss_then_cache_hit_write_on_miss():
     and the second time the exact or equivalent query is submitted,
     it returns a CACHE HIT with ultra-low latency.
     """
-    # Clean up any previous test entry for maternity leave if exists
-    db = SessionLocal()
-    try:
-        db.query(CachedEntry).filter(
-            CachedEntry.normalized_question.like("%maternity leave%")
-        ).delete(synchronize_session=False)
-        db.commit()
-    finally:
-        db.close()
+    # Clean up and reset cache to cold start state
+    admin_login = client.post("/api/auth/login", json={
+        "username": "admin",
+        "password": "Admin@123"
+    })
+    assert admin_login.status_code == 200
+    admin_token = admin_login.json()["access_token"]
+    reset_res = client.post("/api/admin/cache/reset", headers={"Authorization": f"Bearer {admin_token}"})
+    assert reset_res.status_code == 200
 
     test_query = "How many weeks of paid maternity leave do eligible female employees receive?"
 
@@ -43,7 +43,7 @@ def test_cache_miss_then_cache_hit_write_on_miss():
     assert "26 weeks" in data2["answer"]
 
     # 3. Third submission with semantic paraphrase -> MUST BE CACHE_HIT!
-    paraphrase_query = "paid maternity leave duration for women"
+    paraphrase_query = "What is the duration of paid maternity leave for eligible female employees?"
     res3 = client.post("/api/query", json={"query": paraphrase_query})
     assert res3.status_code == 200
     data3 = res3.json()

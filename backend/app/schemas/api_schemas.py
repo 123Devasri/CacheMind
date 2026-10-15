@@ -66,7 +66,7 @@ class CandidateInfo(BaseModel):
 
 class QueryResponse(BaseModel):
     query: str
-    decision: str # "HIT", "CACHE_MISS", "REJECTED_EMPTY_QUERY"
+    decision: str # "HIT", "CACHE_MISS", "INSUFFICIENT_EVIDENCE", "GREETING", "REJECTED_EMPTY_QUERY"
     is_cached: bool
     answer: str
     provider_used: str
@@ -80,9 +80,15 @@ class QueryResponse(BaseModel):
     policy_version: Optional[str] = None
     source_citation: Optional[str] = None
     source_document: Optional[str] = None
+    # Grok API & Document Evidence Fields
+    grok_invoked: bool = False
+    tokens_used: Optional[Dict[str, int]] = None
+    supporting_evidence_references: List[str] = Field(default_factory=list)
+    validation_status: Optional[str] = "passed"
+    estimated_cost_usd: Optional[float] = None
 
 class QueryCheckResponse(BaseModel):
-    status: str # "HIT", "CACHE_MISS", "NEEDS_CONFIRMATION", "GREETING"
+    status: str # "HIT", "CACHE_MISS", "INSUFFICIENT_EVIDENCE", "NEEDS_CONFIRMATION", "GREETING"
     is_cached: bool
     needs_confirmation: bool = False
     original_query: str
@@ -96,6 +102,10 @@ class QueryCheckResponse(BaseModel):
     policy_id: Optional[str] = None
     policy_version: Optional[str] = None
     source_citation: Optional[str] = None
+    grok_invoked: bool = False
+    tokens_used: Optional[Dict[str, int]] = None
+    supporting_evidence_references: List[str] = Field(default_factory=list)
+    validation_status: Optional[str] = "passed"
 
 # --- User Feedback & Report Schemas ---
 class FeedbackCreate(BaseModel):
@@ -279,6 +289,9 @@ class ModelArtifactVersionResponse(BaseModel):
 class RollbackRequest(BaseModel):
     target_version_tag: str
 
+class ModelSelectionRequest(BaseModel):
+    model_name: str # "decision_tree", "logistic_regression", "knn"
+
 # --- Synthetic Data Generation & Candidate Pair Schemas ---
 class SyntheticGenerationRequest(BaseModel):
     policy_id: Optional[str] = None
@@ -327,3 +340,20 @@ class DashboardSummary(BaseModel):
     observed_fhr: Optional[float]
     upper_confidence_bound: Optional[float]
     model_status: Dict[str, str]
+    # Real Grok API & Token Consumption Metrics
+    grok_invocations: int = 0
+    total_tokens_consumed: int = 0
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    actual_cost_usd: float = 0.0
+    actual_cost_inr: float = 0.0
+    cost_without_cache_usd: float = 0.0
+    cost_without_cache_inr: float = 0.0
+    percent_queries_avoided_llm: float = 0.0
+    # Measurable Sustainability & Efficiency Metrics
+    eligible_policy_queries: int = 0
+    policy_cache_hit_rate: float = 0.0
+    llm_calls_avoided: int = 0
+    tokens_avoided: int = 0
+    latency_reduction_percent: float = 0.0
+    environmental_impact_status: str = "insufficient_data"

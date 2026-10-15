@@ -8,6 +8,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 import pypdf
+import numpy as np
 
 from app.db.session import get_db
 from app.core.config import settings
@@ -28,7 +29,7 @@ from app.schemas.api_schemas import (
     PolicyCreate, PolicyUpdate, PolicyResponse, PolicyPreviewResponse,
     ModelArtifactVersionResponse, RollbackRequest,
     SyntheticGenerationRequest, CandidatePairCreate, CandidatePairResponse,
-    SettingsUpdate, DashboardSummary
+    SettingsUpdate, DashboardSummary, ModelSelectionRequest
 )
 from app.ml.cache_pipeline import cache_pipeline
 from app.ml.embeddings import embedding_service
@@ -42,6 +43,9 @@ from app.services.training_service import (
     train_and_evaluate_all_models, rollback_to_model_version, generate_synthetic_pairs_from_text
 )
 from app.services.fallback_service import llm_service
+from app.services.policy_qa_service import sync_policy_qa_to_cache, reindex_all_active_cache_vectors
+from app.services.grok_service import grok_service
+from app.services.rag_service import rag_service
 
 router = APIRouter()
 
@@ -57,7 +61,9 @@ def get_health():
         "embedding_model_ready": embedding_service.is_ready,
         "classifier_fitted": equivalence_classifier.is_fitted,
         "calibrator_fitted": probability_calibrator.is_fitted,
-        "faiss_vector_count": faiss_service.total_vectors()
+        "faiss_vector_count": faiss_service.total_vectors(),
+        "grok_configured": grok_service.is_available(),
+        "grok_model": settings.XAI_MODEL
     }
 
 # ==========================================
@@ -496,6 +502,114 @@ def create_authoritative_policy(
     db.refresh(new_pol)
     return new_pol
 
+def invalidate_cache_for_updated_policy(
+    db: Session,
+    pol: Policy,
+    old_content: str,
+    new_content: str
+) -> int:
+    """
+    Selectively invalidates cached entries belonging to `pol` whose questions or answers
+    are derived from or affected by the modified/updated clauses, while preserving
+    cached entries that correspond strictly to unchanged clauses.
+    """
+    if not old_content or not new_content:
+        invalidated = db.query(CachedEntry).filter(
+            CachedEntry.policy_id == pol.policy_id,
+            CachedEntry.is_active == True
+        ).update({"is_active": False, "faiss_id": None}, synchronize_session=False)
+        db.commit()
+        reindex_all_active_cache_vectors(db)
+        rag_service.invalidate_chunk_cache()
+        return invalidated
+
+    def _extract_clauses(text: str) -> List[str]:
+        paras = [p.strip() for p in re.split(r'\n\s*\n', text) if len(p.strip()) > 15]
+        if not paras:
+            paras = [p.strip() for p in text.split("\n") if len(p.strip()) > 15]
+        return paras or [text.strip()]
+
+    old_clauses = _extract_clauses(old_content)
+    new_clauses = _extract_clauses(new_content)
+
+    changed_or_removed: List[str] = [oc for oc in old_clauses if oc not in new_clauses]
+    added_clauses: List[str] = [nc for nc in new_clauses if nc not in old_clauses]
+
+    if not changed_or_removed and not added_clauses:
+        return 0
+
+    entries = db.query(CachedEntry).filter(
+        CachedEntry.policy_id == pol.policy_id,
+        CachedEntry.is_active == True
+    ).all()
+
+    if not entries:
+        rag_service.invalidate_chunk_cache()
+        return 0
+
+    if len(changed_or_removed) == len(old_clauses):
+        for e in entries:
+            e.is_active = False
+            e.faiss_id = None
+        db.commit()
+        reindex_all_active_cache_vectors(db)
+        rag_service.invalidate_chunk_cache()
+        return len(entries)
+
+    changed_texts = changed_or_removed + added_clauses
+    changed_embs = embedding_service.encode(changed_texts, normalize=True)
+
+    invalidated_count = 0
+    for e in entries:
+        q_emb = embedding_service.encode(e.question, normalize=True).flatten()
+        sims_q = np.dot(changed_embs, q_emb)
+        max_sim_q = float(np.max(sims_q)) if len(sims_q) > 0 else 0.0
+
+        ans_emb = embedding_service.encode(e.answer, normalize=True).flatten()
+        sims_ans = np.dot(changed_embs, ans_emb)
+        max_sim_ans = float(np.max(sims_ans)) if len(sims_ans) > 0 else 0.0
+
+        answer_unsupported = False
+        nums_in_ans = re.findall(r'\b\d+(?:,\d+)*(?:\.\d+)?\b', e.answer)
+        for num in nums_in_ans:
+            if num in old_content and num not in new_content:
+                answer_unsupported = True
+                break
+
+        if max_sim_q >= 0.40 or max_sim_ans >= 0.40 or answer_unsupported:
+            e.is_active = False
+            e.faiss_id = None
+            invalidated_count += 1
+
+    db.commit()
+    reindex_all_active_cache_vectors(db)
+    rag_service.invalidate_chunk_cache()
+    return invalidated_count
+
+def _completely_delete_policy(policy_id: str, db: Session):
+    pol = db.query(Policy).filter(Policy.policy_id == policy_id).first()
+    if not pol:
+        raise HTTPException(status_code=404, detail="Policy not found.")
+
+    # 1. Completely delete all associated cached entries
+    del_cache = db.query(CachedEntry).filter(CachedEntry.policy_id == policy_id).delete(synchronize_session=False)
+
+    # 2. Completely delete all policy versions
+    del_versions = db.query(PolicyVersion).filter(PolicyVersion.policy_id == policy_id).delete(synchronize_session=False)
+
+    # 3. Completely delete the policy
+    db.delete(pol)
+    db.commit()
+
+    # 4. Rebuild FAISS index from remaining active entries and purge RAG chunks
+    reindex_all_active_cache_vectors(db)
+    rag_service.invalidate_chunk_cache()
+
+    return {
+        "status": "success",
+        "message": f"Policy {policy_id} and {del_cache} associated cache entries completely deleted."
+    }
+
 @router.put("/admin/policies/{policy_id}", response_model=PolicyResponse)
 def update_authoritative_policy(
     policy_id: str,
@@ -522,9 +636,11 @@ def update_authoritative_policy(
     if p.expiry_date is not None:
         pol.expiry_date = p.expiry_date
 
+    content_changed = False
+    old_content = pol.content or ""
     if p.content is not None and p.content != pol.content:
         pol.content = p.content
-        # Store a new policy version rather than silently overwriting history
+        content_changed = True
         try:
             curr_v = float(pol.current_version)
             new_v = f"{curr_v + 0.1:.1f}"
@@ -544,7 +660,22 @@ def update_authoritative_policy(
 
     db.commit()
     db.refresh(pol)
+
+    if content_changed:
+        invalidate_cache_for_updated_policy(db, pol, old_content, pol.content)
+    else:
+        reindex_all_active_cache_vectors(db)
+        rag_service.invalidate_chunk_cache()
+
     return pol
+
+@router.delete("/admin/policies/{policy_id}")
+def delete_authoritative_policy(
+    policy_id: str,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    return _completely_delete_policy(policy_id, db)
 
 @router.post("/admin/policies/{policy_id}/deactivate")
 def deactivate_policy(
@@ -552,23 +683,7 @@ def deactivate_policy(
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    pol = db.query(Policy).filter(Policy.policy_id == policy_id).first()
-    if not pol:
-        raise HTTPException(status_code=404, detail="Policy not found.")
-    pol.status = "obsolete"
-    db.commit()
-
-    # Also invalidate cached entries referencing this policy
-    invalidated_count = db.query(CachedEntry).filter(
-        CachedEntry.policy_id == policy_id,
-        CachedEntry.is_active == True
-    ).update({"is_active": False}, synchronize_session=False)
-    db.commit()
-
-    return {
-        "status": "success",
-        "message": f"Policy {policy_id} marked as obsolete. Invalidated {invalidated_count} associated cache entries."
-    }
+    return _completely_delete_policy(policy_id, db)
 
 @router.post("/admin/policies/invalidate-cache")
 def invalidate_obsolete_cache(
@@ -588,6 +703,8 @@ def invalidate_obsolete_cache(
             CachedEntry.is_active == True
         ).update({"is_active": False}, synchronize_session=False)
         db.commit()
+        # Re-index remaining active entries into FAISS
+        reindex_all_active_cache_vectors(db)
 
     return {
         "status": "success",
@@ -714,6 +831,36 @@ def rollback_model_version(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Rollback failed: {str(e)}")
 
+@router.post("/admin/models/select")
+@router.post("/models/select")
+def select_active_model(
+    req: ModelSelectionRequest,
+    db: Session = Depends(get_db)
+):
+    try:
+        equivalence_classifier.set_active_model(req.model_name)
+        return {
+            "status": "success",
+            "active_model": equivalence_classifier.active_model,
+            "message": f"Successfully switched active equivalence classifier to '{equivalence_classifier.active_model}'."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/admin/models/active")
+@router.get("/models/active")
+def get_active_model_info():
+    from app.ml.decision_tree_classifier import decision_tree_classifier
+    from app.ml.knn_classifier import knn_classifier
+    return {
+        "active_model": equivalence_classifier.active_model,
+        "is_fitted": equivalence_classifier.is_fitted,
+        "available_models": ["decision_tree", "logistic_regression", "knn"],
+        "decision_tree": decision_tree_classifier.metadata,
+        "knn": knn_classifier.metadata,
+        "logistic_regression": equivalence_classifier.metadata
+    }
+
 # --- Admin Feedback & Reported Answers Queue ---
 @router.get("/admin/feedback", response_model=List[FeedbackResponse])
 def list_feedback_and_reports(
@@ -782,15 +929,37 @@ def export_audit_logs_csv(
 @router.get("/dashboard/summary", response_model=DashboardSummary)
 def get_dashboard_summary(db: Session = Depends(get_db)):
     total = db.query(QueryAuditLog).count()
-    hits = db.query(QueryAuditLog).filter(QueryAuditLog.decision == "HIT").count()
+    hits = db.query(QueryAuditLog).filter(QueryAuditLog.decision.in_(["HIT", "CACHE_HIT"])).count()
     misses = total - hits
     hit_ratio = float(hits / total) if total > 0 else 0.0
 
-    avg_lookup = db.query(func.avg(QueryAuditLog.lookup_latency_ms)).filter(QueryAuditLog.decision == "HIT").scalar() or 0.0
-    avg_fallback = db.query(func.avg(QueryAuditLog.total_latency_ms)).filter(QueryAuditLog.decision != "HIT").scalar() or 0.0
+    avg_lookup = db.query(func.avg(QueryAuditLog.lookup_latency_ms)).filter(QueryAuditLog.decision.in_(["HIT", "CACHE_HIT"])).scalar() or 0.0
+    avg_fallback = db.query(func.avg(QueryAuditLog.total_latency_ms)).filter(~QueryAuditLog.decision.in_(["HIT", "CACHE_HIT"])).scalar() or 0.0
 
-    cost_saved_usd = float(hits * 0.002)
-    cost_saved_inr = float(hits * 18.00)
+    # Measurable Sustainability & Efficiency Metrics
+    non_policy_count = db.query(QueryAuditLog).filter(QueryAuditLog.decision.in_(["GREETING", "ERROR", "REJECTED_EMPTY_QUERY"])).count()
+    eligible_policy_queries = max(0, total - non_policy_count)
+    policy_cache_hit_rate = float(hits / eligible_policy_queries) if eligible_policy_queries > 0 else 0.0
+    llm_calls_avoided = hits
+    tokens_avoided = hits * 450
+    latency_reduction_pct = round(max(0.0, float((avg_fallback - avg_lookup) / max(1.0, avg_fallback) * 100.0)), 1) if avg_fallback > 0 else 0.0
+
+    # Real Grok API & Token Consumption Metrics
+    grok_invocations = db.query(QueryAuditLog).filter(QueryAuditLog.grok_invoked == True).count()
+    p_tokens = db.query(func.sum(QueryAuditLog.prompt_tokens)).scalar() or 0
+    c_tokens = db.query(func.sum(QueryAuditLog.completion_tokens)).scalar() or 0
+    total_tokens = int(p_tokens + c_tokens)
+
+    # Actual measured/calculated API expense
+    actual_cost_usd = float(db.query(func.sum(QueryAuditLog.estimated_cost_usd)).scalar() or 0.0)
+    # Baseline cost assuming every user query required fresh full LLM inference
+    cost_without_cache_usd = float(total * settings.DEFAULT_LLM_QUERY_COST)
+    # Real net cost saved by cache hits avoiding external LLM inference
+    cost_saved_usd = max(0.0, cost_without_cache_usd - actual_cost_usd)
+    cost_saved_inr = cost_saved_usd * 83.50
+    cost_without_cache_inr = cost_without_cache_usd * 83.50
+    actual_cost_inr = actual_cost_usd * 83.50
+    percent_avoided = float((hits / total) * 100.0) if total > 0 else 0.0
 
     active_eval = db.query(ThresholdEvaluationRun).filter(ThresholdEvaluationRun.is_active == True).order_by(ThresholdEvaluationRun.created_at.desc()).first()
     active_tau = active_eval.selected_threshold if active_eval else settings.DEFAULT_CACHE_THRESHOLD
@@ -801,6 +970,7 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
     status_dict = {m.model_name: m.status for m in models}
     status_dict["embedding_transformer"] = "ready" if embedding_service.is_ready else "error"
     status_dict["faiss_index"] = "ready" if faiss_service.total_vectors() > 0 else "empty"
+    status_dict["grok_api"] = "configured" if grok_service.is_available() else "standby_local_engine"
 
     return DashboardSummary(
         total_queries=total,
@@ -816,7 +986,22 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
         target_fhr=settings.TARGET_FHR,
         observed_fhr=obs_fhr,
         upper_confidence_bound=ucb,
-        model_status=status_dict
+        model_status=status_dict,
+        grok_invocations=grok_invocations,
+        total_tokens_consumed=total_tokens,
+        prompt_tokens=int(p_tokens),
+        completion_tokens=int(c_tokens),
+        actual_cost_usd=round(actual_cost_usd, 4),
+        actual_cost_inr=round(actual_cost_inr, 2),
+        cost_without_cache_usd=round(cost_without_cache_usd, 4),
+        cost_without_cache_inr=round(cost_without_cache_inr, 2),
+        percent_queries_avoided_llm=round(percent_avoided, 1),
+        eligible_policy_queries=eligible_policy_queries,
+        policy_cache_hit_rate=round(policy_cache_hit_rate, 4),
+        llm_calls_avoided=llm_calls_avoided,
+        tokens_avoided=tokens_avoided,
+        latency_reduction_percent=latency_reduction_pct,
+        environmental_impact_status="insufficient_data"
     )
 
 GREETING_RESPONSE_TEXT = (
@@ -851,65 +1036,43 @@ def check_or_optimize_query(
             removed_filler=[],
             answer=GREETING_RESPONSE_TEXT,
             provider_used="enterprise_greeting_handler",
-            lookup_latency_ms=1.5,
-            total_latency_ms=2.5
+            lookup_latency_ms=0.5,
+            total_latency_ms=1.0
         )
 
-    cache_result = cache_pipeline.process_query(
-        db=db,
-        query=req.query,
-        domain_filter=req.domain,
-        user_id=opt_user.id if opt_user else None,
-        conversation_id=req.conversation_id
-    )
-
-    if cache_result.get("is_cached"):
-        return QueryCheckResponse(
-            status="HIT",
-            is_cached=True,
-            needs_confirmation=False,
-            original_query=req.query,
-            optimized_query=None,
-            removed_filler=[],
-            answer=cache_result["answer"],
-            provider_used=cache_result["provider_used"],
-            candidate=cache_result.get("candidate"),
-            lookup_latency_ms=cache_result.get("lookup_latency_ms"),
-            total_latency_ms=cache_result.get("total_latency_ms"),
-            policy_id=cache_result.get("policy_id"),
-            policy_version=cache_result.get("policy_version"),
-            source_citation=cache_result.get("source_citation")
-        )
-
-    if opt_info["is_optimized"]:
+    if opt_info.get("is_optimized") and opt_info.get("optimized_query") != req.query:
         return QueryCheckResponse(
             status="NEEDS_CONFIRMATION",
             is_cached=False,
             needs_confirmation=True,
             original_query=req.query,
             optimized_query=opt_info["optimized_query"],
-            removed_filler=opt_info["removed_filler"],
+            removed_filler=opt_info.get("removed_filler", []),
             answer=None,
-            provider_used=None,
-            lookup_latency_ms=cache_result.get("lookup_latency_ms"),
-            total_latency_ms=cache_result.get("total_latency_ms")
+            provider_used="query_optimizer",
+            lookup_latency_ms=0.5,
+            total_latency_ms=1.5,
+            grok_invoked=False,
+            tokens_used=None,
+            supporting_evidence_references=[],
+            validation_status="passed"
         )
 
     return QueryCheckResponse(
-        status="CACHE_MISS",
+        status="READY",
         is_cached=False,
         needs_confirmation=False,
         original_query=req.query,
-        optimized_query=None,
+        optimized_query=req.query,
         removed_filler=[],
-        answer=cache_result["answer"],
-        provider_used=cache_result["provider_used"],
-        candidate=cache_result.get("candidate"),
-        lookup_latency_ms=cache_result.get("lookup_latency_ms"),
-        total_latency_ms=cache_result.get("total_latency_ms"),
-        policy_id=cache_result.get("policy_id"),
-        policy_version=cache_result.get("policy_version"),
-        source_citation=cache_result.get("source_citation")
+        answer=None,
+        provider_used="query_optimizer",
+        lookup_latency_ms=0.5,
+        total_latency_ms=1.0,
+        grok_invoked=False,
+        tokens_used=None,
+        supporting_evidence_references=[],
+        validation_status="passed"
     )
 
 @router.post("/query", response_model=QueryResponse)
@@ -991,8 +1154,11 @@ def update_policy_public(policy_id: str, p: PolicyUpdate, db: Session = Depends(
         pol.jurisdiction = p.jurisdiction.upper()
     if p.employee_category is not None:
         pol.employee_category = p.employee_category.upper()
-    if p.content is not None:
+    content_changed = False
+    old_content = pol.content or ""
+    if p.content is not None and p.content != pol.content:
         pol.content = p.content
+        content_changed = True
         try:
             curr_v = float(pol.current_version)
             pol.current_version = f"{curr_v + 0.1:.1f}"
@@ -1010,16 +1176,18 @@ def update_policy_public(policy_id: str, p: PolicyUpdate, db: Session = Depends(
 
     db.commit()
     db.refresh(pol)
+
+    if content_changed:
+        invalidate_cache_for_updated_policy(db, pol, old_content, pol.content)
+    else:
+        reindex_all_active_cache_vectors(db)
+        rag_service.invalidate_chunk_cache()
+
     return pol
 
 @router.delete("/policies/{policy_id}")
 def delete_policy_public(policy_id: str, db: Session = Depends(get_db)):
-    pol = db.query(Policy).filter(Policy.policy_id == policy_id).first()
-    if not pol:
-        raise HTTPException(status_code=404, detail="Policy not found.")
-    pol.status = "obsolete"
-    db.commit()
-    return {"message": f"Policy {policy_id} marked obsolete."}
+    return _completely_delete_policy(policy_id, db)
 
 @router.post("/policies/upload")
 async def upload_policy_file_public(
@@ -1085,10 +1253,23 @@ async def upload_policy_file_public(
         db.add(ver)
 
     db.commit()
+
+    # Invalidate existing cache entries derived from this policy if it was updated
+    if existing_pol:
+        db.query(CachedEntry).filter(
+            CachedEntry.policy_id == policy_id,
+            CachedEntry.is_active == True
+        ).update({"is_active": False, "faiss_id": None}, synchronize_session=False)
+        db.commit()
+        reindex_all_active_cache_vectors(db)
+    
+    rag_service.invalidate_chunk_cache()
+
     return {
         "status": "success",
-        "message": f"Policy '{pol_obj.name}' ({policy_id}) successfully uploaded.",
+        "message": f"Policy '{pol_obj.name}' ({policy_id}) successfully uploaded into authoritative knowledge base.",
         "policy_id": policy_id,
+        "qa_pairs_generated": 0,
         "total_characters": len(clean_content)
     }
 
@@ -1178,6 +1359,29 @@ def rebuild_cache_index(db: Session = Depends(get_db)):
     db.commit()
 
     return {"message": f"Successfully rebuilt FAISS index with {count} vectors.", "vector_count": count}
+
+@router.post("/admin/cache/reset")
+@router.post("/cache/reset")
+def reset_cache_cold_start(db: Session = Depends(get_db)):
+    """
+    Cold-Start Reset: Empties all active cache entries and resets FAISS index to 0 vectors.
+    Allows user/admin to verify cold-start -> miss -> grounded fallback -> write-on-miss -> hit workflow.
+    """
+    deactivated = db.query(CachedEntry).filter(CachedEntry.is_active == True).update(
+        {"is_active": False, "faiss_id": None}, synchronize_session=False
+    )
+    db.commit()
+
+    # Reset FAISS index to empty
+    empty_emb = embedding_service.encode([])
+    faiss_service.rebuild_index([], empty_emb)
+
+    return {
+        "status": "success",
+        "message": f"Cold-start initiated. Emptied {deactivated} cached entries. FAISS index reset to 0 vectors.",
+        "vector_count": 0,
+        "deactivated_count": deactivated
+    }
 
 # ML Models Status
 @router.get("/models/status")

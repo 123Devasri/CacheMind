@@ -1,8 +1,8 @@
 {
   "status": "ready",
   "model_type": "IsotonicRegression",
-  "sample_count": 6,
-  "brier_score_before": 0.093364950336064,
-  "brier_score_after": 0.0,
-  "brier_improvement": 0.093364950336064
+  "sample_count": 149,
+  "brier_score_before": 0.2141978680190632,
+  "brier_score_after": 0.09523809523809525,
+  "brier_improvement": 0.11895977278096796
 }

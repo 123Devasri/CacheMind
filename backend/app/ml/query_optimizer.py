@@ -1,7 +1,12 @@
 import re
-from typing import Dict, Any, List
+import json
+from pathlib import Path
+from typing import Dict, Any, List, Tuple
+from app.core.config import settings
+from app.ml.naive_bayes_router import naive_bayes_router
+from app.ml.policy_validation import extract_policy_conditions
 
-# Pure greetings that shouldn't be searched as corporate policies
+# Pure greetings that shouldn't trigger policy document search
 PURE_GREETINGS = [
     r"^(hi|hello|hey|heyy|howdy|greetings|vanakkam|namaste)$",
     r"^(hi|hello|hey)\s+(there|assistant|bot|cachemind|team)$",
@@ -10,7 +15,7 @@ PURE_GREETINGS = [
     r"^(hi|hello|hey)[,\s]+(how\s+are\s+you|how\s+r\s+u|hope\s+you\s+are\s+well)[!?.]*$"
 ]
 
-# Conversational intros, pleasantries, and fillers to strip from inquiries
+# Conversational intros and filler phrases
 PREFIX_FILLERS = [
     r"^(hi|hello|hey|greetings|vanakkam|namaste)[,\s]+",
     r"^(good\s+(morning|afternoon|evening|day))[,\s]+",
@@ -19,42 +24,144 @@ PREFIX_FILLERS = [
     r"^(i\s+need\s+to\s+know\s+(about\s+)?|i\s+want\s+to\s+know\s+(about\s+)?|i\s+would\s+like\s+to\s+know\s+(about\s+)?)",
     r"^(i\s+would\s+like\s+to\s+ask|i\s+just\s+wanted\s+to\s+ask|i\s+wanted\s+to\s+ask\s+(about\s+)?)",
     r"^(could\s+someone\s+clarify|can\s+you\s+clarify|could\s+you\s+explain|please\s+explain)\s+(about\s+)?",
-    r"^(can\s+you\s+help\s+me\s+(with|understand)|help\s+me\s+understand|i\s+am\s+looking\s+for\s+info(rmation)?\s+on)",
+    r"^(can\s+you\s+help\s+me\s+(with|understand)|help\s+me\s+understand|i\s+am\s+looking\s+for\s+info(rmation)?\s+on)\s+",
     r"^(just\s+wondering\s+about|quick\s+question\s+(regarding|about)|quick\s+question)\s+",
     r"^(can\s+you\s+let\s+me\s+know|pls\s+let\s+me\s+know|please\s+let\s+me\s+know)\s+(about\s+)?"
 ]
 
-# Mid-sentence or closing fillers
-MISC_FILLERS = [
-    r"\b(hi|hello|hey)\b",
-    r"\b(how\s+are\s+you|how\s+r\s+u|hope\s+you\s+are\s+well)\b",
-    r"\b(can\s+you\s+please\s+tell\s+me|could\s+you\s+please\s+tell\s+me|please\s+tell\s+me)\b",
-    r"\b(i\s+need\s+to\s+know\s+about|i\s+need\s+to\s+know|i\s+want\s+to\s+know\s+about|i\s+want\s+to\s+know)\b",
-    r"\b(thank\s+you|thanks\s+in\s+advance|thanks\s+a\s+lot|thanks)\b",
-    r"\b(asap|urgently|please\s+help)\b"
+# Trailing polite fillers
+SUFFIX_FILLERS = [
+    r"[,\s]+(please|pls|asap|urgently|thanks|thank\s+you|thanks\s+in\s+advance)[!?.]*$"
 ]
+
+# Common typographical errors in corporate policy inquiries
+COMMON_TYPOS = {
+    "polcy": "policy",
+    "polices": "policies",
+    "reimbursment": "reimbursement",
+    "reimbersement": "reimbursement",
+    "elgible": "eligible",
+    "eligiblity": "eligibility",
+    "leav": "leave",
+    "leaves": "leave",
+    "maternty": "maternity",
+    "paternty": "paternity",
+    "vacatn": "vacation",
+    "allowence": "allowance",
+    "allowences": "allowances",
+    "insurence": "insurance",
+    "insurrance": "insurance",
+    "hospitlization": "hospitalization",
+    "permenant": "permanent",
+    "contarctor": "contractor"
+}
+
+ACRONYMS_FILE = settings.BASE_DIR / "data" / "dictionaries" / "enterprise_acronyms.json"
+ACRONYM_MAP = {}
+if ACRONYMS_FILE.exists():
+    try:
+        with open(ACRONYMS_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            ACRONYM_MAP = data.get("acronyms", {})
+    except Exception as e:
+        print(f"Error loading acronyms: {e}")
+
+def correct_typos(text: str) -> tuple[str, list]:
+    """Corrects unambiguous spelling errors in corporate policy vocabulary."""
+    corrected = text
+    applied = []
+    tokens = re.findall(r'\b[a-zA-Z]+\b', text)
+    for tok in tokens:
+        lower = tok.lower()
+        if lower in COMMON_TYPOS:
+            rep = COMMON_TYPOS[lower]
+            pattern = r'\b' + re.escape(tok) + r'\b'
+            corrected = re.sub(pattern, rep, corrected, flags=re.IGNORECASE)
+            applied.append(f"{tok} -> {rep}")
+    return corrected, applied
+
+def expand_enterprise_acronyms(text: str) -> tuple[str, list]:
+    """Expands enterprise acronyms like WFH -> work from home, PL -> privilege leave."""
+    expanded = text
+    applied = []
+    tokens = re.findall(r'\b[a-zA-Z]+\b', text)
+    for tok in tokens:
+        lower_tok = tok.lower()
+        if lower_tok in ACRONYM_MAP:
+            replacement = ACRONYM_MAP[lower_tok]
+            # Avoid expanding if already followed or preceded by the expansion
+            if replacement.lower() in text.lower():
+                continue
+            pattern = r'\b' + re.escape(tok) + r'\b'
+            expanded = re.sub(pattern, replacement, expanded, flags=re.IGNORECASE)
+            applied.append(f"{tok} -> {replacement}")
+    return expanded, applied
+
+def format_natural_question(text: str) -> str:
+    """
+    Ensures grammatical question phrasing without introducing nonsensical constructs
+    like 'What is the policy regarding explain...'.
+    """
+    clean = text.strip()
+    if not clean:
+        return clean
+
+    question_starters = [
+        "what", "how", "when", "where", "why", "who", "which",
+        "is", "are", "do", "does", "can", "could", "may", "will", "must", "should"
+    ]
+    words = clean.split()
+    first_word = words[0].lower() if words else ""
+
+    # If it already starts with a question word, just ensure sentence capitalization and '?'
+    if first_word in question_starters:
+        return f"{clean[0].upper()}{clean[1:].rstrip('?.!')}?"
+
+    # Handle imperative verbs cleanly
+    imperative_match = re.match(r'^(explain|describe|clarify|detail|outline|summarize)\s+(about\s+|the\s+|our\s+)?', clean, re.IGNORECASE)
+    if imperative_match:
+        subject = clean[imperative_match.end():].strip().rstrip('?.!')
+        if subject:
+            # e.g., 'explain network project' -> 'What is the network project policy?' or 'What is the network project?'
+            if any(k in subject.lower() for k in ["policy", "procedure", "guideline", "rule"]):
+                return f"What is the {subject}?"
+            return f"What is the policy regarding {subject}?"
+
+    # Handle bare topics like 'maternity leave' or 'travel expenses'
+    bare_topic = re.sub(r'^(the|our|about|regarding)\s+', '', clean, flags=re.IGNORECASE).strip().rstrip('?.!')
+    if any(k in bare_topic.lower() for k in ["policy", "guideline", "rule", "procedure"]):
+        return f"What is the {bare_topic}?"
+    return f"What is the policy regarding {bare_topic}?"
 
 def optimize_user_query(raw_query: str) -> Dict[str, Any]:
     """
-    Analyzes an incoming user query:
+    Robust Query Optimization:
     1. Detects pure conversational greetings (e.g. 'hi', 'hello', 'good morning')
-    2. Strips conversational filler and extracts the clean canonical question
-    3. Returns whether the query was optimized or is a pure greeting.
+    2. Strips conversational fillers and opening pleasantries
+    3. Corrects common domain spelling typos
+    4. Expands enterprise acronyms (WFH -> work from home)
+    5. Formulates grammatically clean question while strictly preserving numbers,
+       dates, jurisdictions, employee categories, and negations.
+    6. Uses Naïve Bayes to classify domain.
     """
     if not raw_query or not raw_query.strip():
         return {
             "is_pure_greeting": False,
             "is_optimized": False,
-            "original_query": raw_query,
-            "optimized_query": raw_query,
-            "removed_filler": []
+            "original_query": raw_query or "",
+            "optimized_query": raw_query or "",
+            "removed_filler": [],
+            "expanded_acronyms": [],
+            "predicted_domain": "HR",
+            "domain_confidence": 0.5,
+            "status": "EMPTY"
         }
 
     original = raw_query.strip()
     norm = original.lower().strip()
     norm_no_punct = re.sub(r'[?!.,;:]+', '', norm).strip()
 
-    # 1. Check if it is a pure greeting
+    # 1. Pure greeting check
     for g_pat in PURE_GREETINGS:
         if re.match(g_pat, norm_no_punct, flags=re.IGNORECASE):
             return {
@@ -62,14 +169,17 @@ def optimize_user_query(raw_query: str) -> Dict[str, Any]:
                 "is_optimized": False,
                 "original_query": original,
                 "optimized_query": original,
-                "removed_filler": [original]
+                "removed_filler": [],
+                "expanded_acronyms": [],
+                "predicted_domain": "HR",
+                "domain_confidence": 0.5,
+                "status": "GREETING"
             }
 
-    # 2. Check for conversational query containing actual intent
     working = original
     removed = []
 
-    # Strip prefix fillers iteratively
+    # 2. Strip prefix fillers
     changed = True
     while changed:
         changed = False
@@ -82,59 +192,68 @@ def optimize_user_query(raw_query: str) -> Dict[str, Any]:
                 working = working[m.end():].strip()
                 changed = True
 
-    # Also clean misc fillers if any remain
-    for m_pat in MISC_FILLERS:
-        found = re.findall(m_pat, working, flags=re.IGNORECASE)
-        if found:
-            for item in found:
-                item_str = item if isinstance(item, str) else item[0]
-                if item_str and item_str not in removed:
-                    removed.append(item_str)
-            working = re.sub(m_pat, " ", working, flags=re.IGNORECASE)
+    # Strip suffix fillers
+    for s_pat in SUFFIX_FILLERS:
+        m = re.search(s_pat, working, flags=re.IGNORECASE)
+        if m:
+            matched_str = m.group(0).strip(" ,?;:")
+            if matched_str and matched_str not in removed:
+                removed.append(matched_str)
+            working = re.sub(s_pat, "", working, flags=re.IGNORECASE).strip()
 
-    # Clean redundant punctuation and excessive spaces
+    # 3. Correct typos
+    working, applied_typos = correct_typos(working)
+
+    # 4. Expand enterprise acronyms
+    working, applied_acronyms = expand_enterprise_acronyms(working)
+
+    # Clean whitespace & punctuation
     working = re.sub(r'^[?!.,;:\s]+', '', working)
     working = re.sub(r'\s+', ' ', working).strip()
 
-    # If nothing was left or it was too short, fallback to original
-    if len(working) < 4:
+    # Fallback to original if query became too short
+    if len(working) < 3:
         return {
             "is_pure_greeting": False,
             "is_optimized": False,
             "original_query": original,
             "optimized_query": original,
-            "removed_filler": []
+            "removed_filler": [],
+            "expanded_acronyms": [],
+            "predicted_domain": "HR",
+            "domain_confidence": 0.5,
+            "status": "UNCHANGED"
         }
 
-    # Reformulate cleanly into a professional question if needed
-    cleaned_lower = working.lower()
-    question_starters = ["what", "how", "when", "where", "why", "who", "which", "is", "are", "do", "does", "can", "may", "will", "must"]
-    words = working.split()
-    first_word = words[0].lower() if words else ""
+    # 5. Format natural question
+    candidate = format_natural_question(working)
 
-    if first_word not in question_starters:
-        # e.g. "this and this info" or "the leave policy for permanent staff in Tamil Nadu"
-        # Convert to: "What is the policy regarding this and this info?"
-        core_topic = re.sub(r'^(the|our|about|regarding)\s+', '', working, flags=re.IGNORECASE).strip()
-        if any(term in cleaned_lower for term in ["leave", "wfh", "remote", "travel", "per diem", "allowance", "vpn", "insurance", "reimbursement", "relocation", "policy", "rule"]):
-            optimized_candidate = f"What is the policy regarding {core_topic.rstrip('?.')}?"
-        else:
-            optimized_candidate = f"What is the policy regarding {core_topic.rstrip('?.')}?"
-    else:
-        # Already starts with question starter (e.g. "How many days...", "Is VPN mandatory...")
-        optimized_candidate = f"{working[0].upper()}{working[1:].rstrip('?.')}?"
+    # Safety check: Verify that critical conditions, numbers, and negations were NOT lost
+    orig_cond = extract_policy_conditions(original)
+    cand_cond = extract_policy_conditions(candidate)
 
-    # Compare whether a meaningful transformation happened
-    orig_tokens = set(re.findall(r'\b\w+\b', original.lower()))
-    opt_tokens = set(re.findall(r'\b\w+\b', optimized_candidate.lower()))
-    
-    # Check if filler phrases were removed
-    has_meaningful_change = len(removed) > 0 and len(orig_tokens - opt_tokens) > 0
+    if orig_cond.is_negated != cand_cond.is_negated or orig_cond.numerical_limits != cand_cond.numerical_limits:
+        # Rewriting altered critical numerical or negation logic; safely keep original
+        candidate = f"{original[0].upper()}{original[1:].rstrip('?.!')}?"
+
+    # Domain classification
+    pred_domain, domain_conf, domain_probs = naive_bayes_router.predict_domain(candidate)
+
+    # Only flag as optimized if there is a substantive change (filler removed, typos fixed, or acronyms expanded)
+    is_substantive = bool(removed or applied_acronyms or applied_typos)
+    if not is_substantive and candidate.lower().rstrip('?.') == original.lower().rstrip('?.'):
+        is_substantive = False
 
     return {
         "is_pure_greeting": False,
-        "is_optimized": has_meaningful_change,
+        "is_optimized": is_substantive,
         "original_query": original,
-        "optimized_query": optimized_candidate if has_meaningful_change else original,
-        "removed_filler": removed
+        "optimized_query": candidate,
+        "removed_filler": removed,
+        "expanded_acronyms": applied_acronyms,
+        "corrected_typos": applied_typos,
+        "predicted_domain": pred_domain,
+        "domain_confidence": domain_conf,
+        "domain_probabilities": domain_probs,
+        "status": "NEEDS_CONFIRMATION" if is_substantive else "READY"
     }

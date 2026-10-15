@@ -138,6 +138,15 @@ class QueryAuditLog(Base):
     is_cached_result = Column(Boolean, default=False)
     provider_used = Column(String, default="cache") # "cache", "grounded_company_policy_engine", "openai", "grok"
     
+    # Grok API & Cost Tracking Metrics
+    grok_invoked = Column(Boolean, default=False)
+    prompt_tokens = Column(Integer, default=0)
+    completion_tokens = Column(Integer, default=0)
+    total_tokens = Column(Integer, default=0)
+    estimated_cost_usd = Column(Float, default=0.0)
+    supporting_evidence_references = Column(JSON, default=list)
+    validation_status = Column(String, default="passed") # "passed", "insufficient_evidence", "rejected_mismatch"
+    
     lookup_latency_ms = Column(Float, default=0.0)
     total_latency_ms = Column(Float, default=0.0)
     created_at = Column(DateTime, default=datetime.datetime.utcnow, index=True)

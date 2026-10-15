@@ -43,10 +43,15 @@ export interface QueryResponse {
   policy_version?: string | null;
   source_citation?: string | null;
   source_document?: string | null;
+  grok_invoked?: boolean;
+  tokens_used?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } | null;
+  supporting_evidence_references?: string[];
+  validation_status?: string;
+  estimated_cost_usd?: number | null;
 }
 
 export interface QueryCheckResponse {
-  status: string; // "HIT" | "CACHE_MISS" | "NEEDS_CONFIRMATION" | "GREETING"
+  status: string; // "HIT" | "CACHE_MISS" | "INSUFFICIENT_EVIDENCE" | "NEEDS_CONFIRMATION" | "GREETING"
   is_cached: boolean;
   needs_confirmation: boolean;
   original_query: string;
@@ -60,6 +65,10 @@ export interface QueryCheckResponse {
   policy_id?: string | null;
   policy_version?: string | null;
   source_citation?: string | null;
+  grok_invoked?: boolean;
+  tokens_used?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } | null;
+  supporting_evidence_references?: string[];
+  validation_status?: string;
 }
 
 export interface DashboardSummary {
@@ -77,6 +86,21 @@ export interface DashboardSummary {
   observed_fhr: number | null;
   upper_confidence_bound: number | null;
   model_status: Record<string, string>;
+  grok_invocations?: number;
+  total_tokens_consumed?: number;
+  prompt_tokens?: number;
+  completion_tokens?: number;
+  actual_cost_usd?: number;
+  actual_cost_inr?: number;
+  cost_without_cache_usd?: number;
+  cost_without_cache_inr?: number;
+  percent_queries_avoided_llm?: number;
+  eligible_policy_queries?: number;
+  policy_cache_hit_rate?: number;
+  llm_calls_avoided?: number;
+  tokens_avoided?: number;
+  latency_reduction_percent?: number;
+  environmental_impact_status?: string;
 }
 
 export interface CacheEntry {

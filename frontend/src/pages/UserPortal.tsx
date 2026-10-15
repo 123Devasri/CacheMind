@@ -27,7 +27,9 @@ import {
   ChevronRight,
   Info,
   ExternalLink,
-  Plus
+  Plus,
+  Zap,
+  AlertTriangle
 } from 'lucide-react';
 import {
   submitUserQuery,
@@ -57,6 +59,7 @@ interface ChatMessage {
   text: string;
   timestamp: string;
   isCached?: boolean;
+  decision?: string;
   lookupLatency?: number;
   totalLatency?: number;
   policyId?: string | null;
@@ -67,13 +70,17 @@ interface ChatMessage {
   isOptimized?: boolean;
   userRating?: 'helpful' | 'not_helpful' | null;
   isFavorited?: boolean;
+  grokInvoked?: boolean;
+  tokensUsed?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } | null;
+  validationStatus?: string;
+  supportingEvidence?: string[];
 }
 
 export const UserPortal: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState<'chat' | 'history' | 'favorites' | 'analytics' | 'profile'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'history' | 'profile'>('chat');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
@@ -112,10 +119,6 @@ export const UserPortal: React.FC = () => {
   useEffect(() => {
     if (activeTab === 'history') {
       loadHistory();
-    } else if (activeTab === 'favorites') {
-      loadFavorites();
-    } else if (activeTab === 'analytics') {
-      loadAnalytics();
     }
   }, [activeTab]);
 
@@ -207,6 +210,7 @@ export const UserPortal: React.FC = () => {
         text: resp.answer,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isCached: resp.is_cached,
+        decision: resp.decision,
         lookupLatency: resp.lookup_latency_ms,
         totalLatency: resp.total_latency_ms,
         policyId: resp.policy_id,
@@ -215,7 +219,11 @@ export const UserPortal: React.FC = () => {
         sourceDocument: resp.source_document,
         logId: resp.log_id,
         userRating: null,
-        isFavorited: false
+        isFavorited: false,
+        grokInvoked: resp.grok_invoked,
+        tokensUsed: resp.tokens_used,
+        validationStatus: resp.validation_status,
+        supportingEvidence: resp.supporting_evidence_references
       };
       setMessages((prev) => [...prev, assistantMsg]);
     } catch (err: any) {
@@ -224,7 +232,8 @@ export const UserPortal: React.FC = () => {
         sender: 'assistant',
         text: err?.response?.data?.detail || 'Unable to connect to policy knowledge base. Please try again.',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isCached: false
+        isCached: false,
+        decision: 'ERROR'
       };
       setMessages((prev) => [...prev, errMsg]);
     } finally {
@@ -246,6 +255,7 @@ export const UserPortal: React.FC = () => {
         text: resp.answer,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isCached: resp.is_cached,
+        decision: resp.decision,
         lookupLatency: resp.lookup_latency_ms,
         totalLatency: resp.total_latency_ms,
         policyId: resp.policy_id,
@@ -254,7 +264,11 @@ export const UserPortal: React.FC = () => {
         sourceDocument: resp.source_document,
         logId: resp.log_id,
         userRating: null,
-        isFavorited: false
+        isFavorited: false,
+        grokInvoked: resp.grok_invoked,
+        tokensUsed: resp.tokens_used,
+        validationStatus: resp.validation_status,
+        supportingEvidence: resp.supporting_evidence_references
       };
       setMessages((prev) => [...prev, assistantMsg]);
     } catch (err: any) {
@@ -400,29 +414,6 @@ export const UserPortal: React.FC = () => {
               <span>My History</span>
             </button>
 
-            <button
-              onClick={() => setActiveTab('favorites')}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                activeTab === 'favorites'
-                  ? 'bg-slate-200/70 text-slate-900'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-              }`}
-            >
-              <Star className="w-4 h-4" />
-              <span>Favourites</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('analytics')}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md font-medium transition-colors ${
-                activeTab === 'analytics'
-                  ? 'bg-slate-200/70 text-slate-900'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-              }`}
-            >
-              <Activity className="w-4 h-4" />
-              <span>My Activity</span>
-            </button>
 
             <button
               onClick={() => setActiveTab('profile')}
@@ -546,19 +537,39 @@ export const UserPortal: React.FC = () => {
                           : 'bg-white border border-slate-200 text-slate-850 shadow-xs'
                       }`}
                     >
-                      {/* Assistant Header: Hit / Miss Badge */}
+                      {/* Assistant Header: Hit / Miss / Insufficient Evidence Badge */}
                       {msg.sender === 'assistant' && (
-                        <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
-                          <div className="flex items-center gap-2">
-                            {msg.isCached ? (
+                        <div className="flex flex-wrap items-center justify-between pb-2 mb-2 border-b border-slate-100 gap-2">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {msg.isCached || msg.decision === 'HIT' ? (
                               <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">
-                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                CACHE HIT
+                                <Zap className="w-3 h-3 text-emerald-600" />
+                                CACHE HIT (0 LLM Calls)
+                              </span>
+                            ) : msg.decision === 'INSUFFICIENT_EVIDENCE' ? (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-amber-50 text-amber-700 px-2 py-0.5 rounded border border-amber-200">
+                                <AlertTriangle className="w-3 h-3 text-amber-600" />
+                                INSUFFICIENT EVIDENCE
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-amber-50 text-amber-700 px-2 py-0.5 rounded border border-amber-200">
-                                <AlertCircle className="w-3 h-3 text-amber-600" />
-                                CACHE MISS (DOCUMENT RESOLVED)
+                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-200">
+                                <Sparkles className="w-3 h-3 text-blue-600" />
+                                CACHE MISS
+                              </span>
+                            )}
+
+                            {msg.grokInvoked ? (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded border border-purple-200">
+                                Grok-2 Grounded
+                                {msg.tokensUsed?.total_tokens ? ` (${msg.tokensUsed.total_tokens} tokens)` : ''}
+                              </span>
+                            ) : msg.isCached ? (
+                              <span className="text-[10px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-150">
+                                Grok Skipped
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-150">
+                                Document Grounded
                               </span>
                             )}
 
@@ -569,8 +580,9 @@ export const UserPortal: React.FC = () => {
                             )}
                           </div>
 
-                          <span className="text-[10px] text-slate-400 flex items-center gap-1">
+                          <span className="text-[10px] text-slate-400 flex items-center gap-1 shrink-0">
                             <Clock className="w-3 h-3" />
+                            {msg.lookupLatency ? `Lookup: ${msg.lookupLatency.toFixed(1)}ms | ` : ''}
                             {msg.totalLatency?.toFixed(1) || '2.0'} ms
                           </span>
                         </div>
@@ -622,17 +634,8 @@ export const UserPortal: React.FC = () => {
                             </button>
                           </div>
 
-                          {/* Right: Star & Copy */}
+                          {/* Right: Copy */}
                           <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => handleToggleFavorite(msg)}
-                              title="Save to Favourites"
-                              className={`p-1 rounded hover:bg-slate-100 transition-colors ${
-                                msg.isFavorited ? 'text-amber-500' : 'text-slate-400'
-                              }`}
-                            >
-                              <Star className="w-3.5 h-3.5" fill={msg.isFavorited ? 'currentColor' : 'none'} />
-                            </button>
                             <button
                               onClick={() => handleCopyText(msg.text, msg.id)}
                               title="Copy Answer"
@@ -818,142 +821,6 @@ export const UserPortal: React.FC = () => {
                 </tbody>
               </table>
             </div>
-          </div>
-        )}
-
-        {/* TAB 3: FAVOURITES */}
-        {activeTab === 'favorites' && (
-          <div className="flex-1 flex flex-col h-full overflow-hidden p-6">
-            <div className="pb-4 border-b border-slate-200">
-              <h2 className="text-sm font-semibold text-slate-900">
-                Bookmarked Favourites
-              </h2>
-              <p className="text-xs text-slate-500">
-                Quick access to your saved enterprise policy guidelines.
-              </p>
-            </div>
-
-            <div className="flex-1 overflow-y-auto mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {favoritesList.length === 0 ? (
-                <div className="col-span-full py-16 text-center text-slate-400 text-xs">
-                  No bookmarked favourites yet. Star helpful answers during chat to access them here.
-                </div>
-              ) : (
-                favoritesList.map((fav) => (
-                  <div
-                    key={fav.id}
-                    className="p-4 rounded-xl border border-slate-200 bg-white shadow-xs flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
-                          {fav.policy_id || 'Policy Excerpt'}
-                        </span>
-                        <button
-                          onClick={() => removeUserFavorite(fav.id).then(loadFavorites)}
-                          className="text-slate-400 hover:text-rose-600 transition-colors"
-                          title="Remove from Favourites"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                      <h4 className="text-xs font-semibold text-slate-900 mb-2">
-                        {fav.query_text}
-                      </h4>
-                      <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">
-                        {fav.answer}
-                      </p>
-                    </div>
-
-                    <div className="mt-4 pt-2.5 border-t border-slate-100 flex items-center justify-between text-slate-400 text-[11px]">
-                      <span>Saved on {new Date(fav.created_at).toLocaleDateString()}</span>
-                      <button
-                        onClick={() => handleCopyText(fav.answer, fav.id)}
-                        className="flex items-center gap-1 text-slate-600 hover:text-slate-900"
-                      >
-                        {copiedId === fav.id ? (
-                          <>
-                            <Check className="w-3 h-3 text-emerald-600" />
-                            <span>Copied</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3 h-3" />
-                            <span>Copy</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: MY ACTIVITY */}
-        {activeTab === 'analytics' && (
-          <div className="flex-1 flex flex-col h-full overflow-hidden p-6 space-y-6">
-            <div className="pb-4 border-b border-slate-200">
-              <h2 className="text-sm font-semibold text-slate-900">
-                Personal Query Activity & Metrics
-              </h2>
-              <p className="text-xs text-slate-500">
-                Real-time metrics for your personal assistant sessions.
-              </p>
-            </div>
-
-            {analyticsData ? (
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                    <p className="text-xs font-medium text-slate-500">Total Questions</p>
-                    <p className="text-2xl font-bold text-slate-900 mt-1">
-                      {analyticsData.total_queries}
-                    </p>
-                  </div>
-                  <div className="p-4 bg-emerald-50/50 rounded-xl border border-emerald-200">
-                    <p className="text-xs font-medium text-emerald-700">Cache Hits</p>
-                    <p className="text-2xl font-bold text-emerald-900 mt-1">
-                      {analyticsData.cache_hits}
-                    </p>
-                  </div>
-                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                    <p className="text-xs font-medium text-slate-500">Hit Ratio</p>
-                    <p className="text-2xl font-bold text-slate-900 mt-1">
-                      {(analyticsData.cache_hit_ratio * 100).toFixed(1)}%
-                    </p>
-                  </div>
-                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                    <p className="text-xs font-medium text-slate-500">Avg Latency</p>
-                    <p className="text-2xl font-bold text-slate-900 mt-1">
-                      {analyticsData.avg_latency_ms.toFixed(1)} ms
-                    </p>
-                  </div>
-                </div>
-
-                {/* Topics breakdown */}
-                <div className="p-4 rounded-xl border border-slate-200 bg-white">
-                  <h4 className="text-xs font-semibold text-slate-800 mb-3">
-                    Frequently Accessed Policy Topics
-                  </h4>
-                  {analyticsData.frequently_accessed_topics.length === 0 ? (
-                    <p className="text-xs text-slate-400 py-4">No topic data available yet.</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {analyticsData.frequently_accessed_topics.map((t) => (
-                        <div key={t.topic} className="flex items-center justify-between text-xs py-1 border-b border-slate-100 last:border-none">
-                          <span className="font-medium text-slate-700">{t.topic}</span>
-                          <span className="text-slate-500 font-mono">{t.count} queries</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <p className="text-xs text-slate-400">Loading analytics...</p>
-            )}
           </div>
         )}
 

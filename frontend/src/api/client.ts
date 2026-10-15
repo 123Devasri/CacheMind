@@ -374,3 +374,25 @@ export const listDatasets = async (): Promise<any[]> => {
   const res = await api.get('/datasets');
   return res.data;
 };
+
+export const resetCacheColdStart = async (): Promise<{ status: string; message: string; vector_count: number; deactivated_count: number }> => {
+  const res = await api.post('/admin/cache/reset');
+  return res.data;
+};
+
+export const selectActiveModel = async (modelName: string): Promise<{ status: string; active_model: string; message: string }> => {
+  const res = await api.post('/admin/models/select', { model_name: modelName });
+  return res.data;
+};
+
+export const getActiveModelInfo = async (): Promise<{
+  active_model: string;
+  is_fitted: boolean;
+  available_models: string[];
+  decision_tree: any;
+  knn: any;
+  logistic_regression: any;
+}> => {
+  const res = await api.get('/admin/models/active');
+  return res.data;
+};
