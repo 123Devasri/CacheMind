@@ -101,6 +101,13 @@ export interface DashboardSummary {
   tokens_avoided?: number;
   latency_reduction_percent?: number;
   environmental_impact_status?: string;
+  current_active_cache_entries?: number;
+  current_invalidated_cache_entries?: number;
+  total_historical_cache_hits?: number;
+  historical_cache_hit_rate?: number;
+  insufficient_evidence_queries?: number;
+  document_conflict_queries?: number;
+  pending_insufficient_questions_count?: number;
 }
 
 export interface CacheEntry {
@@ -339,3 +346,32 @@ export interface SettingsData {
   company_name?: string;
   location?: string;
 }
+
+export interface InsufficientDataQuestion {
+  id: string;
+  request_id?: string | null;
+  query_text: string;
+  normalized_query: string;
+  user_id?: string | null;
+  policy_scope: string;
+  retrieval_status: string;
+  reason?: string | null;
+  confidence_score?: number | null;
+  occurrence_count: number;
+  first_asked_at: string;
+  last_asked_at: string;
+  status: 'PENDING' | 'REVIEWED' | 'RESOLVED';
+  admin_notes?: string | null;
+  resolved_by_policy_id?: string | null;
+  resolved_at?: string | null;
+  log_id?: string | null;
+}
+
+export interface InsufficientDataQuestionListResponse {
+  items: InsufficientDataQuestion[];
+  total: number;
+  pending_count: number;
+  reviewed_count: number;
+  resolved_count: number;
+}
+

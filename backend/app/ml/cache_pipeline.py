@@ -1,9 +1,11 @@
 import time
+import uuid
+import datetime
 from typing import Optional, Dict, Any, List
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.models.entities import CachedEntry, QueryAuditLog, ThresholdEvaluationRun, Policy
+from app.models.entities import CachedEntry, QueryAuditLog, ThresholdEvaluationRun, Policy, InsufficientDataQuestion
 from app.ml.embeddings import embedding_service
 from app.ml.faiss_index import faiss_service
 from app.ml.policy_validation import extract_policy_conditions, validate_condition_safety, normalize_text
@@ -49,6 +51,7 @@ class CacheDecisionPipeline:
     ) -> Dict[str, Any]:
         start_time = time.perf_counter()
         lookup_start = start_time
+        request_id = str(uuid.uuid4())
         active_threshold = self.get_active_threshold(db)
 
         # Step 0: Prompt & Question Optimization (Acronym expansion & Naive Bayes domain classification)
@@ -59,6 +62,8 @@ class CacheDecisionPipeline:
             tot_lat = round((time.perf_counter() - start_time) * 1000.0, 2)
             greeting_answer = "Hello! I am your Enterprise Policy AI Assistant. How can I assist you with corporate policies today?"
             audit_log = QueryAuditLog(
+                request_id=request_id,
+                query_category="GREETING",
                 user_id=user_id,
                 conversation_id=conversation_id,
                 query_text=query,
@@ -247,6 +252,8 @@ class CacheDecisionPipeline:
         if chosen_hit:
             decision = "HIT"
             returned_answer = chosen_hit.answer
+            if isinstance(returned_answer, str):
+                returned_answer = returned_answer.replace('\u202f', ' ').replace('\xa0', ' ').replace('\u200b', '')
             is_cached = True
             provider_used = "cache"
             grok_invoked = False
@@ -256,17 +263,25 @@ class CacheDecisionPipeline:
             policy_id = chosen_hit.policy_id
             policy_version = chosen_hit.policy_version
             source_document = pol_obj.name if pol_obj else f"Policy {chosen_hit.policy_id}"
-            source_citation = f"Policy {chosen_hit.policy_id} (Version {chosen_hit.policy_version}) - Jurisdiction: {chosen_hit.jurisdiction}, Scope: {chosen_hit.employee_category}"
+            source_citation = chosen_hit.source_citation or f"Policy {chosen_hit.policy_id} (Version {chosen_hit.policy_version}) - Jurisdiction: {chosen_hit.jurisdiction}, Scope: {chosen_hit.employee_category}"
+            source_section_ids = chosen_hit.source_section_ids or []
             supporting_evidence_references = [source_citation]
         else:
             fallback_res = llm_service.generate_response(db=db, query=query, domain=domain_filter)
             has_sufficient = fallback_res.get("has_sufficient_evidence", True)
             returned_answer = fallback_res["answer"]
+            if isinstance(returned_answer, str):
+                returned_answer = returned_answer.replace('\u202f', ' ').replace('\xa0', ' ').replace('\u200b', '')
             provider_used = fallback_res.get("provider", "grounded_company_policy_engine")
             policy_id = fallback_res.get("policy_id")
             policy_version = fallback_res.get("policy_version")
             source_citation = fallback_res.get("source_citation")
             source_document = fallback_res.get("source_document")
+            source_section_ids = fallback_res.get("source_section_ids", [])
+            source_content_hashes = fallback_res.get("source_content_hashes", {})
+            retrieval_status = fallback_res.get("retrieval_status", "ANSWERED" if has_sufficient else "INSUFFICIENT_EVIDENCE")
+            confidence_score = fallback_res.get("confidence_score", 0.0)
+            insufficient_reason = fallback_res.get("insufficient_reason")
             grok_invoked = fallback_res.get("grok_invoked", False)
             tokens_used = fallback_res.get("tokens_used", {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0})
             estimated_cost_usd = fallback_res.get("estimated_cost_usd", settings.DEFAULT_LLM_QUERY_COST if grok_invoked else 0.0)
@@ -274,7 +289,12 @@ class CacheDecisionPipeline:
             validation_status = fallback_res.get("validation_status", "passed" if has_sufficient else "insufficient_evidence")
             total_latency_ms = (time.perf_counter() - start_time) * 1000.0
 
-            if not has_sufficient or policy_id is None:
+            gap_record = None
+            if retrieval_status == "DOCUMENT_CONFLICT":
+                decision = "DOCUMENT_CONFLICT"
+                is_cached = False
+                validation_status = "conflict"
+            elif not has_sufficient or policy_id is None or retrieval_status == "INSUFFICIENT_EVIDENCE":
                 decision = "INSUFFICIENT_EVIDENCE"
                 is_cached = False
                 validation_status = "insufficient_evidence"
@@ -321,6 +341,10 @@ class CacheDecisionPipeline:
                                 jurisdiction=pol_rec.jurisdiction if pol_rec else "INDIA",
                                 employee_category=pol_rec.employee_category if pol_rec else "ALL",
                                 numerical_limits=extract_policy_conditions(norm_query).numerical_limits,
+                                source_section_ids=source_section_ids,
+                                source_content_hashes=source_content_hashes,
+                                source_citation=source_citation,
+                                last_validated_at=datetime.datetime.utcnow(),
                                 is_verified=True,
                                 is_active=True,
                                 hit_count=0
@@ -337,17 +361,59 @@ class CacheDecisionPipeline:
                         print(f"Warning: Auto-cache on miss error: {ex}")
                         db.rollback()
 
+            # Record in InsufficientDataQuestion if genuine policy gap
+            if decision in ["INSUFFICIENT_EVIDENCE", "DOCUMENT_CONFLICT"]:
+                try:
+                    existing_gap = db.query(InsufficientDataQuestion).filter(
+                        InsufficientDataQuestion.normalized_query == norm_query
+                    ).first()
+
+                    if existing_gap:
+                        existing_gap.occurrence_count += 1
+                        existing_gap.last_asked_at = datetime.datetime.utcnow()
+                        existing_gap.confidence_score = confidence_score
+                        existing_gap.reason = insufficient_reason or existing_gap.reason
+                        existing_gap.retrieval_status = decision
+                        if existing_gap.status == "RESOLVED":
+                            existing_gap.status = "PENDING"
+                        db.commit()
+                        gap_record = existing_gap
+                    else:
+                        new_gap = InsufficientDataQuestion(
+                            request_id=request_id,
+                            query_text=query,
+                            normalized_query=norm_query,
+                            user_id=user_id,
+                            policy_scope=effective_domain or (policy_id if policy_id else "ALL"),
+                            retrieval_status=decision,
+                            reason=insufficient_reason or "No relevant evidence found in uploaded policy documents.",
+                            confidence_score=confidence_score,
+                            occurrence_count=1,
+                            status="PENDING",
+                            first_asked_at=datetime.datetime.utcnow(),
+                            last_asked_at=datetime.datetime.utcnow()
+                        )
+                        db.add(new_gap)
+                        db.commit()
+                        db.refresh(new_gap)
+                        gap_record = new_gap
+                except Exception as gap_ex:
+                    print(f"Warning: Failed to record InsufficientDataQuestion: {gap_ex}")
+                    db.rollback()
+
         # Step 14: Persist Comprehensive Audit Log
         audit_log = QueryAuditLog(
+            request_id=request_id,
+            query_category="POLICY",
             user_id=user_id,
             conversation_id=conversation_id,
             query_text=query,
             domain_filter=domain_filter,
             decision=decision,
             rejection_reasons=rejection_reasons,
-            candidate_cache_id=best_candidate_info["cache_id"] if best_candidate_info else None,
-            candidate_faiss_id=best_candidate_info["faiss_id"] if best_candidate_info else None,
-            candidate_question=best_candidate_info["question"] if best_candidate_info else None,
+            candidate_cache_id=chosen_hit.id if chosen_hit else (best_candidate_info["cache_id"] if best_candidate_info else None),
+            candidate_faiss_id=chosen_hit.faiss_id if chosen_hit else (best_candidate_info["faiss_id"] if best_candidate_info else None),
+            candidate_question=chosen_hit.question if chosen_hit else (best_candidate_info["question"] if best_candidate_info else None),
             cosine_similarity=best_candidate_info["cosine_similarity"] if best_candidate_info else None,
             classifier_score=best_candidate_info["classifier_score"] if best_candidate_info else None,
             calibrated_probability=best_candidate_info["calibrated_probability"] if best_candidate_info else None,
@@ -356,6 +422,7 @@ class CacheDecisionPipeline:
             condition_mismatches=best_candidate_info["condition_mismatches"] if best_candidate_info else [],
             policy_id=policy_id,
             policy_version=policy_version,
+            source_section_ids=source_section_ids if 'source_section_ids' in locals() else [],
             source_citation=source_citation,
             source_document=source_document,
             returned_answer=returned_answer,
@@ -373,6 +440,10 @@ class CacheDecisionPipeline:
         )
         db.add(audit_log)
         db.commit()
+
+        if 'gap_record' in locals() and gap_record and gap_record.log_id is None:
+            gap_record.log_id = audit_log.id
+            db.commit()
 
         return {
             "query": query,

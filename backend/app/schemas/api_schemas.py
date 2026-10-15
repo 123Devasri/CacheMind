@@ -357,3 +357,43 @@ class DashboardSummary(BaseModel):
     tokens_avoided: int = 0
     latency_reduction_percent: float = 0.0
     environmental_impact_status: str = "insufficient_data"
+    # Granular Cache State vs Immutable Historical Events
+    current_active_cache_entries: int = 0
+    current_invalidated_cache_entries: int = 0
+    total_historical_cache_hits: int = 0
+    historical_cache_hit_rate: float = 0.0
+    insufficient_evidence_queries: int = 0
+    document_conflict_queries: int = 0
+    pending_insufficient_questions_count: int = 0
+
+# --- Insufficient Data Questions Schemas ---
+class InsufficientDataQuestionResponse(BaseModel):
+    id: str
+    request_id: Optional[str] = None
+    query_text: str
+    normalized_query: str
+    user_id: Optional[str] = None
+    policy_scope: str
+    retrieval_status: str
+    reason: Optional[str] = None
+    confidence_score: Optional[float] = None
+    occurrence_count: int = 1
+    first_asked_at: datetime
+    last_asked_at: datetime
+    status: str
+    admin_notes: Optional[str] = None
+    resolved_by_policy_id: Optional[str] = None
+    resolved_at: Optional[datetime] = None
+    log_id: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
+
+class InsufficientDataQuestionUpdate(BaseModel):
+    status: Optional[str] = None  # "PENDING", "REVIEWED", "RESOLVED"
+    admin_notes: Optional[str] = None
+
+class InsufficientDataQuestionListResponse(BaseModel):
+    items: List[InsufficientDataQuestionResponse]
+    total: int
+    pending_count: int
+    reviewed_count: int
+    resolved_count: int

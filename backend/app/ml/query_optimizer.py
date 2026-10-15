@@ -8,11 +8,11 @@ from app.ml.policy_validation import extract_policy_conditions
 
 # Pure greetings that shouldn't trigger policy document search
 PURE_GREETINGS = [
-    r"^(hi|hello|hey|heyy|howdy|greetings|vanakkam|namaste)$",
-    r"^(hi|hello|hey)\s+(there|assistant|bot|cachemind|team)$",
-    r"^(good\s+(morning|afternoon|evening|day))$",
-    r"^(how\s+are\s+you|how\s+r\s+u|how\s+do\s+you\s+do|what'?s\s+up)$",
-    r"^(hi|hello|hey)[,\s]+(how\s+are\s+you|how\s+r\s+u|hope\s+you\s+are\s+well)[!?.]*$"
+    r"^(hi|hello|hey|heyy|howdy|greetings|vanakkam|namaste)[!?.]*$",
+    r"^(hi|hello|hey)\s+(there|assistant|bot|cachemind|team)[!?.]*$",
+    r"^(good\s+(morning|afternoon|evening|day))[!?.]*$",
+    r"^(how\s+are\s+you|how\s+r\s+u|how\s+do\s+you\s+do|what'?s\s+up)[!?.]*$",
+    r"^(hi|hello|hey)[,\s]+(good\s+(morning|afternoon|evening|day)|how\s+are\s+you|how\s+r\s+u|hope\s+you\s+are\s+well)[!?.]*$"
 ]
 
 # Conversational intros and filler phrases

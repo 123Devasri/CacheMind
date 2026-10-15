@@ -108,8 +108,9 @@ class GrokService:
         # 1. Format Evidence Passages
         evidence_blocks = []
         for idx, chunk in enumerate(retrieved_evidence, 1):
+            sec_heading = chunk.get("heading") or "General Provision"
             block = (
-                f"[Passage {idx} | Ref: {chunk.get('policy_id', 'UNKNOWN')} v{chunk.get('policy_version', '1.0')}]\n"
+                f"[Passage {idx} | Ref: {chunk.get('policy_id', 'UNKNOWN')} v{chunk.get('policy_version', '1.0')} | Section: {sec_heading}]\n"
                 f"Document: {chunk.get('policy_name', 'Corporate Policy')}\n"
                 f"Jurisdiction: {chunk.get('jurisdiction', 'GLOBAL')} | Scope: {chunk.get('employee_category', 'ALL')}\n"
                 f"Text:\n{chunk.get('text', '')}"
@@ -138,7 +139,8 @@ class GrokService:
             f"{evidence_text}\n\n"
             "INSTRUCTIONS:\n"
             "Carefully examine the approved policy evidence above to answer the question.\n"
-            "If the evidence does not clearly support an answer, set \"has_sufficient_evidence\": false.\n"
+            "If the evidence contains sufficient facts to answer the question, formulate a clear, direct, and helpful answer grounded strictly in the evidence, and set \"has_sufficient_evidence\": true.\n"
+            "Only set \"has_sufficient_evidence\": false if the evidence truly does not mention or support the topic.\n"
             "Return a valid JSON object matching this schema:\n"
             "{\n"
             '  "has_sufficient_evidence": true,\n'
@@ -158,7 +160,7 @@ class GrokService:
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key.strip()}",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) CacheMind/1.0"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         }
 
         payload = {
@@ -305,6 +307,15 @@ class GrokService:
                 parsed["has_sufficient_evidence"] = True
             if "supporting_evidence_references" not in parsed:
                 parsed["supporting_evidence_references"] = []
+            
+            # Sanitize answer string to prevent Windows CP1252 charmap encoding errors
+            if isinstance(parsed.get("answer"), str):
+                ans = parsed["answer"]
+                ans = ans.replace('\u202f', ' ').replace('\xa0', ' ').replace('\u200b', '')
+                ans = ans.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
+                ans = ans.replace('\u2011', '-').replace('\u2013', '-').replace('\u2014', '--')
+                parsed["answer"] = ans
+
             return parsed
 
         # Check if text explicitly says insufficient evidence

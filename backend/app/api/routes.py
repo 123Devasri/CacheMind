@@ -17,7 +17,7 @@ from app.api.deps import get_current_user, get_optional_user, require_admin
 from app.models.entities import (
     User, Conversation, CachedEntry, QueryAuditLog, Policy, PolicyVersion,
     ModelMetadata, ModelArtifactVersion, ThresholdEvaluationRun, DatasetRecord,
-    UserFeedback, UserFavorite
+    UserFeedback, UserFavorite, InsufficientDataQuestion
 )
 from app.schemas.api_schemas import (
     UserRegister, UserLogin, UserResponse, UserStatusUpdate, TokenResponse,
@@ -29,7 +29,8 @@ from app.schemas.api_schemas import (
     PolicyCreate, PolicyUpdate, PolicyResponse, PolicyPreviewResponse,
     ModelArtifactVersionResponse, RollbackRequest,
     SyntheticGenerationRequest, CandidatePairCreate, CandidatePairResponse,
-    SettingsUpdate, DashboardSummary, ModelSelectionRequest
+    SettingsUpdate, DashboardSummary, ModelSelectionRequest,
+    InsufficientDataQuestionResponse, InsufficientDataQuestionUpdate, InsufficientDataQuestionListResponse
 )
 from app.ml.cache_pipeline import cache_pipeline
 from app.ml.embeddings import embedding_service
@@ -45,7 +46,7 @@ from app.services.training_service import (
 from app.services.fallback_service import llm_service
 from app.services.policy_qa_service import sync_policy_qa_to_cache, reindex_all_active_cache_vectors
 from app.services.grok_service import grok_service
-from app.services.rag_service import rag_service
+from app.services.rag_service import rag_service, parse_policy_sections
 
 router = APIRouter()
 
@@ -502,6 +503,49 @@ def create_authoritative_policy(
     db.refresh(new_pol)
     return new_pol
 
+def re_evaluate_pending_insufficient_questions(db: Session, policy_id: Optional[str] = None) -> int:
+    """
+    Re-evaluates pending InsufficientDataQuestion records against active policies.
+    If the RAG service can now retrieve sufficient grounded evidence,
+    marks the record as RESOLVED and records resolution timestamp and policy ID.
+    """
+    pending_questions = db.query(InsufficientDataQuestion).filter(
+        InsufficientDataQuestion.status == "PENDING"
+    ).all()
+
+    if not pending_questions:
+        return 0
+
+    resolved_count = 0
+    for q in pending_questions:
+        try:
+            domain_filter = None if q.policy_scope == "ALL" else q.policy_scope
+            evidence = rag_service.retrieve_evidence(
+                db=db,
+                query=q.query_text,
+                domain=domain_filter,
+                top_k=3,
+                min_similarity=0.28
+            )
+            has_sufficient = evidence.get("has_sufficient_evidence", False)
+            ret_status = evidence.get("retrieval_status", "INSUFFICIENT_EVIDENCE")
+
+            if has_sufficient and ret_status == "ANSWERED":
+                matched_pol_id = evidence.get("primary_policy_id") or evidence.get("policy_id") or policy_id
+                q.status = "RESOLVED"
+                q.resolved_by_policy_id = matched_pol_id
+                q.resolved_at = datetime.datetime.utcnow()
+                note_str = f"Auto-resolved after policy update ({matched_pol_id})."
+                q.admin_notes = f"{q.admin_notes} | {note_str}".strip(" |") if q.admin_notes else note_str
+                resolved_count += 1
+        except Exception as ex:
+            print(f"Warning: Re-evaluation error for gap {q.id}: {ex}")
+
+    if resolved_count > 0:
+        db.commit()
+
+    return resolved_count
+
 def invalidate_cache_for_updated_policy(
     db: Session,
     pol: Policy,
@@ -510,33 +554,51 @@ def invalidate_cache_for_updated_policy(
 ) -> int:
     """
     Selectively invalidates cached entries belonging to `pol` whose questions or answers
-    are derived from or affected by the modified/updated clauses, while preserving
-    cached entries that correspond strictly to unchanged clauses.
+    are derived from or affected by the modified or deleted sections/clauses,
+    while strictly preserving cached entries that correspond to unchanged sections.
+    Uses section IDs and SHA-256 content hashes for exact dependency tracking.
     """
     if not old_content or not new_content:
         invalidated = db.query(CachedEntry).filter(
             CachedEntry.policy_id == pol.policy_id,
             CachedEntry.is_active == True
-        ).update({"is_active": False, "faiss_id": None}, synchronize_session=False)
+        ).update({"is_active": False, "faiss_id": None, "invalidation_reason": "Full policy replacement"}, synchronize_session=False)
         db.commit()
         reindex_all_active_cache_vectors(db)
         rag_service.invalidate_chunk_cache()
         return invalidated
 
-    def _extract_clauses(text: str) -> List[str]:
-        paras = [p.strip() for p in re.split(r'\n\s*\n', text) if len(p.strip()) > 15]
-        if not paras:
-            paras = [p.strip() for p in text.split("\n") if len(p.strip()) > 15]
-        return paras or [text.strip()]
+    old_sections = parse_policy_sections(old_content, pol.policy_id)
+    new_sections = parse_policy_sections(new_content, pol.policy_id)
 
-    old_clauses = _extract_clauses(old_content)
-    new_clauses = _extract_clauses(new_content)
+    old_sec_map = {s["section_id"]: s for s in old_sections}
+    new_sec_map = {s["section_id"]: s for s in new_sections}
+    old_hash_map = {s["section_id"]: s["content_hash"] for s in old_sections}
+    new_hash_map = {s["section_id"]: s["content_hash"] for s in new_sections}
 
-    changed_or_removed: List[str] = [oc for oc in old_clauses if oc not in new_clauses]
-    added_clauses: List[str] = [nc for nc in new_clauses if nc not in old_clauses]
+    # Also map by normalized heading for resilience against section ID renumbering
+    old_heading_map = {re.sub(r'[^a-zA-Z0-9]', '', s["heading"].lower()): s for s in old_sections}
+    new_heading_map = {re.sub(r'[^a-zA-Z0-9]', '', s["heading"].lower()): s for s in new_sections}
 
-    if not changed_or_removed and not added_clauses:
-        return 0
+    deleted_section_ids = set(old_sec_map.keys()) - set(new_sec_map.keys())
+    # If heading still exists in new sections with identical hash, not actually deleted
+    true_deleted_section_ids = set()
+    for dsid in deleted_section_ids:
+        ds_heading = re.sub(r'[^a-zA-Z0-9]', '', old_sec_map[dsid]["heading"].lower())
+        if ds_heading in new_heading_map and new_heading_map[ds_heading]["content_hash"] == old_hash_map[dsid]:
+            continue
+        true_deleted_section_ids.add(dsid)
+
+    modified_section_ids = set()
+    for sid, old_sec in old_sec_map.items():
+        if sid in new_sec_map:
+            if old_hash_map[sid] != new_hash_map[sid]:
+                modified_section_ids.add(sid)
+        else:
+            ds_heading = re.sub(r'[^a-zA-Z0-9]', '', old_sec["heading"].lower())
+            if ds_heading in new_heading_map:
+                if new_heading_map[ds_heading]["content_hash"] != old_hash_map[sid]:
+                    modified_section_ids.add(sid)
 
     entries = db.query(CachedEntry).filter(
         CachedEntry.policy_id == pol.policy_id,
@@ -547,38 +609,65 @@ def invalidate_cache_for_updated_policy(
         rag_service.invalidate_chunk_cache()
         return 0
 
-    if len(changed_or_removed) == len(old_clauses):
-        for e in entries:
-            e.is_active = False
-            e.faiss_id = None
-        db.commit()
-        reindex_all_active_cache_vectors(db)
-        rag_service.invalidate_chunk_cache()
-        return len(entries)
-
+    # Collect texts of modified / deleted clauses for legacy entries fallback
+    changed_or_removed = [s["text"] for sid, s in old_sec_map.items() if sid in true_deleted_section_ids or sid in modified_section_ids]
+    added_clauses = [s["text"] for sid, s in new_sec_map.items() if sid not in old_sec_map]
     changed_texts = changed_or_removed + added_clauses
-    changed_embs = embedding_service.encode(changed_texts, normalize=True)
+    changed_embs = embedding_service.encode(changed_texts, normalize=True) if changed_texts else None
 
     invalidated_count = 0
     for e in entries:
-        q_emb = embedding_service.encode(e.question, normalize=True).flatten()
-        sims_q = np.dot(changed_embs, q_emb)
-        max_sim_q = float(np.max(sims_q)) if len(sims_q) > 0 else 0.0
+        should_invalidate = False
+        reason = ""
 
-        ans_emb = embedding_service.encode(e.answer, normalize=True).flatten()
-        sims_ans = np.dot(changed_embs, ans_emb)
-        max_sim_ans = float(np.max(sims_ans)) if len(sims_ans) > 0 else 0.0
+        # 1. Granular Dependency Tracking Check (exact section IDs and hashes)
+        if e.source_section_ids and isinstance(e.source_section_ids, list) and len(e.source_section_ids) > 0:
+            for sid in e.source_section_ids:
+                if sid in true_deleted_section_ids:
+                    should_invalidate = True
+                    reason = f"Dependency section {sid} deleted in policy update."
+                    break
+                if sid in modified_section_ids:
+                    # Compare stored content hash
+                    stored_hash = (e.source_content_hashes or {}).get(sid)
+                    current_hash = new_hash_map.get(sid)
+                    if not current_hash:
+                        # Check by heading
+                        old_s = old_sec_map.get(sid)
+                        if old_s:
+                            ds_heading = re.sub(r'[^a-zA-Z0-9]', '', old_s["heading"].lower())
+                            if ds_heading in new_heading_map:
+                                current_hash = new_heading_map[ds_heading]["content_hash"]
+                    if stored_hash is None or current_hash is None or stored_hash != current_hash:
+                        should_invalidate = True
+                        reason = f"Dependency section {sid} content changed in policy update."
+                        break
+        else:
+            # 2. Conservative fallback for legacy cache entries without section tracking
+            if changed_embs is not None and len(changed_texts) > 0:
+                q_emb = embedding_service.encode(e.question, normalize=True).flatten()
+                sims_q = np.dot(changed_embs, q_emb)
+                max_sim_q = float(np.max(sims_q)) if len(sims_q) > 0 else 0.0
 
-        answer_unsupported = False
-        nums_in_ans = re.findall(r'\b\d+(?:,\d+)*(?:\.\d+)?\b', e.answer)
-        for num in nums_in_ans:
-            if num in old_content and num not in new_content:
-                answer_unsupported = True
-                break
+                ans_emb = embedding_service.encode(e.answer, normalize=True).flatten()
+                sims_ans = np.dot(changed_embs, ans_emb)
+                max_sim_ans = float(np.max(sims_ans)) if len(sims_ans) > 0 else 0.0
 
-        if max_sim_q >= 0.40 or max_sim_ans >= 0.40 or answer_unsupported:
+                answer_unsupported = False
+                nums_in_ans = re.findall(r'\b\d+(?:,\d+)*(?:\.\d+)?\b', e.answer)
+                for num in nums_in_ans:
+                    if num in old_content and num not in new_content:
+                        answer_unsupported = True
+                        break
+
+                if max_sim_q >= 0.40 or max_sim_ans >= 0.40 or answer_unsupported:
+                    should_invalidate = True
+                    reason = "Semantic match to changed policy clause (legacy fallback)."
+
+        if should_invalidate:
             e.is_active = False
             e.faiss_id = None
+            e.invalidation_reason = reason
             invalidated_count += 1
 
     db.commit()
@@ -663,7 +752,13 @@ def update_authoritative_policy(
 
     if content_changed:
         invalidate_cache_for_updated_policy(db, pol, old_content, pol.content)
+        re_evaluate_pending_insufficient_questions(db, pol.policy_id)
     else:
+        # Metadata only (display name, domain): update citations without deactivating
+        for entry in pol.cached_entries:
+            if entry.is_active:
+                entry.source_citation = f"Policy {pol.policy_id} ({pol.name}, v{pol.current_version}) - Jurisdiction: {entry.jurisdiction}, Scope: {entry.employee_category}"
+        db.commit()
         reindex_all_active_cache_vectors(db)
         rag_service.invalidate_chunk_cache()
 
@@ -961,6 +1056,14 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
     actual_cost_inr = actual_cost_usd * 83.50
     percent_avoided = float((hits / total) * 100.0) if total > 0 else 0.0
 
+    # Current Cache State vs Immutable Historical Events
+    current_active = db.query(CachedEntry).filter(CachedEntry.is_active == True).count()
+    current_invalidated = db.query(CachedEntry).filter(CachedEntry.is_active == False).count()
+    total_historical_hits = hits
+    insufficient_queries = db.query(QueryAuditLog).filter(QueryAuditLog.decision == "INSUFFICIENT_EVIDENCE").count()
+    conflict_queries = db.query(QueryAuditLog).filter(QueryAuditLog.decision == "DOCUMENT_CONFLICT").count()
+    pending_insufficient = db.query(InsufficientDataQuestion).filter(InsufficientDataQuestion.status == "PENDING").count()
+
     active_eval = db.query(ThresholdEvaluationRun).filter(ThresholdEvaluationRun.is_active == True).order_by(ThresholdEvaluationRun.created_at.desc()).first()
     active_tau = active_eval.selected_threshold if active_eval else settings.DEFAULT_CACHE_THRESHOLD
     obs_fhr = active_eval.observed_fhr if active_eval else None
@@ -1001,8 +1104,106 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
         llm_calls_avoided=llm_calls_avoided,
         tokens_avoided=tokens_avoided,
         latency_reduction_percent=latency_reduction_pct,
-        environmental_impact_status="insufficient_data"
+        environmental_impact_status="insufficient_data",
+        current_active_cache_entries=current_active,
+        current_invalidated_cache_entries=current_invalidated,
+        total_historical_cache_hits=total_historical_hits,
+        historical_cache_hit_rate=round(policy_cache_hit_rate, 4),
+        insufficient_evidence_queries=insufficient_queries,
+        document_conflict_queries=conflict_queries,
+        pending_insufficient_questions_count=pending_insufficient
     )
+
+# ==========================================
+# 6. INSUFFICIENT DATA QUESTIONS (ADMIN)
+# ==========================================
+@router.get("/admin/insufficient-data-questions", response_model=InsufficientDataQuestionListResponse)
+def list_insufficient_data_questions(
+    status: Optional[str] = None,
+    search: Optional[str] = None,
+    policy_scope: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+    sort_by: str = "last_asked_at",
+    order: str = "desc",
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    query = db.query(InsufficientDataQuestion)
+
+    if status and status.upper() != "ALL":
+        query = query.filter(InsufficientDataQuestion.status == status.upper())
+
+    if policy_scope and policy_scope.upper() != "ALL":
+        query = query.filter(InsufficientDataQuestion.policy_scope == policy_scope.upper())
+
+    if search and search.strip():
+        term = f"%{search.strip().lower()}%"
+        query = query.filter(
+            func.lower(InsufficientDataQuestion.query_text).like(term) |
+            func.lower(InsufficientDataQuestion.reason).like(term) |
+            func.lower(InsufficientDataQuestion.policy_scope).like(term)
+        )
+
+    total = query.count()
+    pending_count = db.query(InsufficientDataQuestion).filter(InsufficientDataQuestion.status == "PENDING").count()
+    reviewed_count = db.query(InsufficientDataQuestion).filter(InsufficientDataQuestion.status == "REVIEWED").count()
+    resolved_count = db.query(InsufficientDataQuestion).filter(InsufficientDataQuestion.status == "RESOLVED").count()
+
+    if sort_by == "occurrence_count":
+        query = query.order_by(InsufficientDataQuestion.occurrence_count.desc() if order == "desc" else InsufficientDataQuestion.occurrence_count.asc())
+    else:
+        query = query.order_by(InsufficientDataQuestion.last_asked_at.desc() if order == "desc" else InsufficientDataQuestion.last_asked_at.asc())
+
+    items = query.offset(offset).limit(limit).all()
+
+    return InsufficientDataQuestionListResponse(
+        items=items,
+        total=total,
+        pending_count=pending_count,
+        reviewed_count=reviewed_count,
+        resolved_count=resolved_count
+    )
+
+@router.patch("/admin/insufficient-data-questions/{question_id}", response_model=InsufficientDataQuestionResponse)
+def update_insufficient_data_question(
+    question_id: str,
+    update: InsufficientDataQuestionUpdate,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    gap = db.query(InsufficientDataQuestion).filter(InsufficientDataQuestion.id == question_id).first()
+    if not gap:
+        raise HTTPException(status_code=404, detail="Insufficient data question not found.")
+
+    if update.status is not None:
+        valid_statuses = ["PENDING", "REVIEWED", "RESOLVED"]
+        if update.status.upper() not in valid_statuses:
+            raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+        gap.status = update.status.upper()
+        if gap.status == "RESOLVED" and not gap.resolved_at:
+            gap.resolved_at = datetime.datetime.utcnow()
+
+    if update.admin_notes is not None:
+        gap.admin_notes = update.admin_notes
+
+    db.commit()
+    db.refresh(gap)
+    return gap
+
+@router.post("/admin/insufficient-data-questions/re-evaluate")
+def re_evaluate_insufficient_data_questions(
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    resolved = re_evaluate_pending_insufficient_questions(db)
+    remaining_pending = db.query(InsufficientDataQuestion).filter(InsufficientDataQuestion.status == "PENDING").count()
+    return {
+        "status": "success",
+        "message": f"Successfully re-evaluated pending questions against active policy documents. {resolved} questions resolved.",
+        "resolved_count": resolved,
+        "remaining_pending": remaining_pending
+    }
 
 GREETING_RESPONSE_TEXT = (
     "Hello! I am CacheMind, the enterprise AI policy assistant for Kaveri Tech Solutions "
@@ -1227,8 +1428,24 @@ async def upload_policy_file_public(
     policy_id = f"TN-{domain.upper()}-{clean_name[:12]}"
 
     existing_pol = db.query(Policy).filter(Policy.policy_id == policy_id).first()
+    old_content = ""
     if existing_pol:
+        old_content = existing_pol.content or ""
         existing_pol.content = clean_content
+        try:
+            curr_v = float(existing_pol.current_version)
+            existing_pol.current_version = f"{curr_v + 0.1:.1f}"
+        except Exception:
+            existing_pol.current_version = "1.1"
+
+        ver = PolicyVersion(
+            policy_id=policy_id,
+            version=existing_pol.current_version,
+            change_summary=f"Updated from uploaded file {filename}",
+            content=clean_content,
+            is_active=True
+        )
+        db.add(ver)
         pol_obj = existing_pol
     else:
         pol_obj = Policy(
@@ -1254,16 +1471,13 @@ async def upload_policy_file_public(
 
     db.commit()
 
-    # Invalidate existing cache entries derived from this policy if it was updated
-    if existing_pol:
-        db.query(CachedEntry).filter(
-            CachedEntry.policy_id == policy_id,
-            CachedEntry.is_active == True
-        ).update({"is_active": False, "faiss_id": None}, synchronize_session=False)
-        db.commit()
-        reindex_all_active_cache_vectors(db)
+    # Invalidate existing cache entries selectively if policy was updated
+    if existing_pol and old_content:
+        invalidate_cache_for_updated_policy(db, pol_obj, old_content, clean_content)
+    else:
+        rag_service.invalidate_chunk_cache()
     
-    rag_service.invalidate_chunk_cache()
+    re_evaluate_pending_insufficient_questions(db, policy_id)
 
     return {
         "status": "success",

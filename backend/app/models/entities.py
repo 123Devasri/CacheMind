@@ -48,6 +48,8 @@ class Policy(Base):
     employee_category = Column(String, default="ALL") # FULL_TIME, CONTRACTOR, INTERN, ALL
     current_version = Column(String, default="1.0")
     content = Column(Text, nullable=False)
+    content_hash = Column(String, nullable=True) # SHA-256 content hash for granular change detection
+    parsed_sections = Column(JSON, default=list) # Section breakdown with headings, text, and section hashes
     status = Column(String, default="active") # "active", "obsolete", "draft"
     effective_date = Column(DateTime, default=datetime.datetime.utcnow)
     expiry_date = Column(DateTime, nullable=True)
@@ -66,6 +68,8 @@ class PolicyVersion(Base):
     version = Column(String, nullable=False)
     change_summary = Column(Text, nullable=True)
     content = Column(Text, nullable=False)
+    content_hash = Column(String, nullable=True)
+    parsed_sections = Column(JSON, default=list)
     is_active = Column(Boolean, default=True)
     effective_date = Column(DateTime, default=datetime.datetime.utcnow)
     
@@ -84,6 +88,13 @@ class CachedEntry(Base):
     policy_id = Column(String, ForeignKey("policies.policy_id"), nullable=False)
     policy_version = Column(String, nullable=False, default="1.0")
     domain = Column(String, index=True, nullable=False)
+    
+    # Granular Dependency Tracking Metadata
+    source_section_ids = Column(JSON, default=list) # List of exact section/chunk IDs: ["TN-HR-LEAVE-01-sec-01"]
+    source_content_hashes = Column(JSON, default=dict) # Map: {section_id: content_hash} at time of caching
+    source_citation = Column(Text, nullable=True)
+    last_validated_at = Column(DateTime, default=datetime.datetime.utcnow)
+    invalidation_reason = Column(String, nullable=True)
     
     # Structured condition metadata
     jurisdiction = Column(String, default="INDIA")
@@ -105,13 +116,15 @@ class QueryAuditLog(Base):
     __tablename__ = "query_audit_logs"
     
     id = Column(String, primary_key=True, default=generate_uuid)
+    request_id = Column(String, nullable=True, index=True) # Idempotent request identifier
+    query_category = Column(String, default="POLICY", index=True) # "POLICY", "GREETING", "TECHNICAL_ERROR"
     user_id = Column(String, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
     conversation_id = Column(String, ForeignKey("conversations.id", ondelete="SET NULL"), nullable=True, index=True)
     
     query_text = Column(Text, nullable=False)
     domain_filter = Column(String, nullable=True)
     
-    decision = Column(String, nullable=False) # "HIT", "CACHE_MISS", "REJECTED_POLICY_MISMATCH", etc.
+    decision = Column(String, nullable=False) # "HIT", "CACHE_MISS", "INSUFFICIENT_EVIDENCE", "DOCUMENT_CONFLICT", "GREETING", "ERROR"
     rejection_reasons = Column(JSON, default=list)
     
     candidate_cache_id = Column(String, ForeignKey("cached_entries.id"), nullable=True)
@@ -131,8 +144,10 @@ class QueryAuditLog(Base):
     # Policy Citation & Version
     policy_id = Column(String, nullable=True)
     policy_version = Column(String, nullable=True)
+    source_section_ids = Column(JSON, default=list)
     source_citation = Column(Text, nullable=True)
     source_document = Column(String, nullable=True)
+    error_reason = Column(String, nullable=True)
     
     returned_answer = Column(Text, nullable=False)
     is_cached_result = Column(Boolean, default=False)
@@ -145,11 +160,43 @@ class QueryAuditLog(Base):
     total_tokens = Column(Integer, default=0)
     estimated_cost_usd = Column(Float, default=0.0)
     supporting_evidence_references = Column(JSON, default=list)
-    validation_status = Column(String, default="passed") # "passed", "insufficient_evidence", "rejected_mismatch"
+    validation_status = Column(String, default="passed") # "passed", "insufficient_evidence", "conflict", "error"
     
     lookup_latency_ms = Column(Float, default=0.0)
     total_latency_ms = Column(Float, default=0.0)
     created_at = Column(DateTime, default=datetime.datetime.utcnow, index=True)
+
+
+class InsufficientDataQuestion(Base):
+    """
+    Persistent store for genuine unanswered policy questions.
+    Provides administrators with visibility into policy gaps, recurrence frequency,
+    and automatic resolution when updated policies cover previously missing evidence.
+    """
+    __tablename__ = "insufficient_data_questions"
+    
+    id = Column(String, primary_key=True, default=generate_uuid)
+    request_id = Column(String, nullable=True, index=True)
+    query_text = Column(Text, nullable=False)
+    normalized_query = Column(Text, nullable=False, index=True)
+    user_id = Column(String, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    policy_scope = Column(String, default="ALL") # e.g. "HR", "FINANCE", "TN-HR-LEAVE-01"
+    
+    retrieval_status = Column(String, default="INSUFFICIENT_EVIDENCE", index=True)
+    # "INSUFFICIENT_EVIDENCE", "DOCUMENT_CONFLICT", "RETRIEVAL_ERROR", "LLM_ERROR"
+    reason = Column(Text, nullable=True)
+    confidence_score = Column(Float, nullable=True) # Top similarity score
+    
+    occurrence_count = Column(Integer, default=1)
+    first_asked_at = Column(DateTime, default=datetime.datetime.utcnow)
+    last_asked_at = Column(DateTime, default=datetime.datetime.utcnow, index=True)
+    
+    status = Column(String, default="PENDING", index=True) # "PENDING", "REVIEWED", "RESOLVED"
+    admin_notes = Column(Text, nullable=True)
+    resolved_by_policy_id = Column(String, nullable=True)
+    resolved_at = Column(DateTime, nullable=True)
+    
+    log_id = Column(String, ForeignKey("query_audit_logs.id", ondelete="SET NULL"), nullable=True)
 
 
 class UserFeedback(Base):

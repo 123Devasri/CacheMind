@@ -38,7 +38,10 @@ import {
   CheckSquare,
   Sliders,
   FileSpreadsheet,
-  Leaf
+  Leaf,
+  HelpCircle,
+  FileQuestion,
+  MessageSquareQuote
 } from 'lucide-react';
 import {
   getDashboardSummary,
@@ -71,7 +74,10 @@ import {
   exportAuditLogsUrl,
   resetCacheColdStart,
   selectActiveModel,
-  getActiveModelInfo
+  getActiveModelInfo,
+  getInsufficientDataQuestions,
+  updateInsufficientDataQuestion,
+  reEvaluateInsufficientDataQuestions
 } from '../api/client';
 import {
   DashboardSummary,
@@ -85,7 +91,9 @@ import {
   FeedbackItem,
   ClusterAnalyticsResponse,
   SettingsData,
-  CandidatePair
+  CandidatePair,
+  InsufficientDataQuestion,
+  InsufficientDataQuestionListResponse
 } from '../types';
 import { useAuth } from '../context/AuthContext';
 
@@ -93,7 +101,7 @@ export const AdminPortal: React.FC = () => {
   const { user: currentUser } = useAuth();
 
   const [activeTab, setActiveTab] = useState<
-    'analytics' | 'users' | 'policies' | 'cache'
+    'analytics' | 'users' | 'policies' | 'insufficient' | 'cache'
   >('analytics');
 
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
@@ -107,6 +115,14 @@ export const AdminPortal: React.FC = () => {
   const [clusters, setClusters] = useState<ClusterAnalyticsResponse | null>(null);
   const [settingsData, setSettingsData] = useState<SettingsData | null>(null);
   const [candidatePairs, setCandidatePairs] = useState<CandidatePair[]>([]);
+
+  // Insufficient Data Questions (Policy Gaps) State
+  const [insufficientData, setInsufficientData] = useState<InsufficientDataQuestionListResponse | null>(null);
+  const [insufficientStatusFilter, setInsufficientStatusFilter] = useState<'ALL' | 'PENDING' | 'REVIEWED' | 'RESOLVED'>('ALL');
+  const [insufficientSearch, setInsufficientSearch] = useState('');
+  const [insufficientLoading, setInsufficientLoading] = useState(false);
+  const [editingGapNotes, setEditingGapNotes] = useState<{ id: string; notes: string } | null>(null);
+  const [reEvaluating, setReEvaluating] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -217,7 +233,7 @@ export const AdminPortal: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [sum, pols, cEntries, logs, mStatus, clust, sett, uList, mReg, fbList, activeModelData] = await Promise.all([
+      const [sum, pols, cEntries, logs, mStatus, clust, sett, uList, mReg, fbList, activeModelData, gapData] = await Promise.all([
         getDashboardSummary().catch(() => null),
         getPolicies().catch(() => []),
         getCacheEntries().catch(() => []),
@@ -228,7 +244,8 @@ export const AdminPortal: React.FC = () => {
         getAllUsers().catch(() => []),
         getModelRegistry().catch(() => []),
         getAdminFeedback().catch(() => []),
-        getActiveModelInfo().catch(() => null)
+        getActiveModelInfo().catch(() => null),
+        getInsufficientDataQuestions().catch(() => null)
       ]);
 
       if (sum) setSummary(sum);
@@ -242,6 +259,7 @@ export const AdminPortal: React.FC = () => {
       if (mReg) setModelRegistry(mReg);
       if (fbList) setFeedbackList(fbList);
       if (activeModelData) setActiveModelInfo(activeModelData);
+      if (gapData) setInsufficientData(gapData);
     } catch (err) {
       console.error(err);
     } finally {
@@ -249,9 +267,70 @@ export const AdminPortal: React.FC = () => {
     }
   };
 
+  const fetchInsufficientQuestions = async (statusOverride?: string, searchOverride?: string) => {
+    setInsufficientLoading(true);
+    try {
+      const statusParam = (statusOverride !== undefined ? statusOverride : insufficientStatusFilter) === 'ALL'
+        ? undefined
+        : (statusOverride !== undefined ? statusOverride : insufficientStatusFilter);
+      const searchParam = (searchOverride !== undefined ? searchOverride : insufficientSearch).trim() || undefined;
+      const data = await getInsufficientDataQuestions({ status: statusParam, search: searchParam });
+      setInsufficientData(data);
+    } catch (err: any) {
+      console.error("Error loading insufficient data questions:", err);
+    } finally {
+      setInsufficientLoading(false);
+    }
+  };
+
+  const handleUpdateGapStatus = async (gapId: string, newStatus: 'PENDING' | 'REVIEWED' | 'RESOLVED') => {
+    try {
+      await updateInsufficientDataQuestion(gapId, { status: newStatus });
+      showBanner(`Question marked as ${newStatus}.`, 'success');
+      fetchInsufficientQuestions();
+      const sum = await getDashboardSummary().catch(() => null);
+      if (sum) setSummary(sum);
+    } catch (err: any) {
+      showBanner(err?.response?.data?.detail || 'Failed to update status', 'error');
+    }
+  };
+
+  const handleSaveGapNotes = async (gapId: string, notes: string) => {
+    try {
+      await updateInsufficientDataQuestion(gapId, { admin_notes: notes });
+      showBanner('Admin notes saved successfully.', 'success');
+      setEditingGapNotes(null);
+      fetchInsufficientQuestions();
+    } catch (err: any) {
+      showBanner(err?.response?.data?.detail || 'Failed to save notes', 'error');
+    }
+  };
+
+  const handleBatchReEvaluateGaps = async () => {
+    setReEvaluating(true);
+    try {
+      const res = await reEvaluateInsufficientDataQuestions();
+      showBanner(res.message, 'success');
+      await Promise.all([
+        fetchInsufficientQuestions(),
+        loadData()
+      ]);
+    } catch (err: any) {
+      showBanner(err?.response?.data?.detail || 'Re-evaluation failed.', 'error');
+    } finally {
+      setReEvaluating(false);
+    }
+  };
+
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'insufficient') {
+      fetchInsufficientQuestions();
+    }
+  }, [activeTab, insufficientStatusFilter]);
 
   // Filtered queries
   const filteredUsers = usersList.filter(
@@ -621,6 +700,13 @@ export const AdminPortal: React.FC = () => {
           { key: 'analytics', label: 'Analytics & Costs', icon: BarChart3 },
           { key: 'users', label: 'User Management', icon: Users, badge: usersList.length },
           { key: 'policies', label: 'Policies & Documents', icon: FileText, badge: policies.length },
+          {
+            key: 'insufficient',
+            label: 'Insufficient Data Questions',
+            icon: HelpCircle,
+            badge: insufficientData?.pending_count ?? summary?.pending_insufficient_questions_count ?? 0,
+            isWarning: (insufficientData?.pending_count ?? summary?.pending_insufficient_questions_count ?? 0) > 0
+          },
           { key: 'cache', label: 'Cache Explorer', icon: Database, badge: cacheEntries.length }
         ].map((tab) => {
           const Icon = tab.icon;
@@ -640,7 +726,9 @@ export const AdminPortal: React.FC = () => {
               {tab.badge !== undefined && (
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                    tab.key === 'feedback' && tab.badge > 0
+                    tab.isWarning
+                      ? 'bg-amber-100 text-amber-800 border border-amber-300 font-bold'
+                      : tab.key === 'feedback' && tab.badge > 0
                       ? 'bg-rose-100 text-rose-700'
                       : 'bg-slate-100 text-slate-600'
                   }`}
@@ -675,30 +763,30 @@ export const AdminPortal: React.FC = () => {
                   <div>
                     <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                       <Zap className="h-4 w-4 text-emerald-600" />
-                      <span>1. Cache Hit Rate & System Throughput</span>
+                      <span>1. Historical Cache Hit Rate & System Throughput</span>
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Operational performance showing questions resolved instantly from verified cache vs required fresh model lookups.
+                      Historical hit rate is computed strictly from immutable QueryAuditLog events for eligible policy questions. Deleting or invalidating cache entries never drops historical analytics.
                     </p>
                   </div>
                   <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold">
-                    {(summary.cache_hit_ratio * 100).toFixed(1)}% Hit Ratio
+                    {(((summary.policy_cache_hit_rate ?? summary.cache_hit_ratio) || 0) * 100).toFixed(1)}% Historical Hit Rate
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
                   <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                    <span className="text-[11px] text-slate-500 font-medium">Total Questions Asked</span>
+                    <span className="text-[11px] text-slate-500 font-medium">Eligible Policy Inquiries</span>
                     <div className="text-2xl font-bold text-slate-900 mt-1">
-                      {summary.total_queries}
+                      {summary.eligible_policy_queries ?? summary.total_queries}
                     </div>
-                    <p className="text-[10px] text-slate-500 mt-1">All employee inquiries logged</p>
+                    <p className="text-[10px] text-slate-500 mt-1">All employee policy questions</p>
                   </div>
 
                   <div className="p-4 rounded-lg bg-emerald-50/60 border border-emerald-200">
-                    <span className="text-[11px] text-emerald-700 font-medium">Cache Hits (Instant Reuse)</span>
+                    <span className="text-[11px] text-emerald-700 font-medium">Historical Cache Hits</span>
                     <div className="text-2xl font-bold text-emerald-800 mt-1">
-                      {summary.cache_hits}
+                      {summary.total_historical_cache_hits ?? summary.cache_hits}
                     </div>
                     <p className="text-[10px] text-emerald-700 mt-1">
                       Avg latency: {summary.avg_lookup_latency_ms.toFixed(1)} ms (&lt;5ms)
@@ -706,23 +794,23 @@ export const AdminPortal: React.FC = () => {
                   </div>
 
                   <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                    <span className="text-[11px] text-slate-500 font-medium">Cache Misses (First-Time Search)</span>
+                    <span className="text-[11px] text-slate-500 font-medium">Active Cache Entries</span>
                     <div className="text-2xl font-bold text-slate-800 mt-1">
-                      {summary.cache_misses}
+                      {summary.current_active_cache_entries ?? cacheEntries.filter(c => c.is_active).length}
                     </div>
                     <p className="text-[10px] text-slate-500 mt-1">
-                      Grounded in approved policies
+                      {summary.current_invalidated_cache_entries ?? cacheEntries.filter(c => !c.is_active).length} invalidated versions
                     </p>
                   </div>
 
-                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                    <span className="text-[11px] text-slate-500 font-medium">Latency Acceleration</span>
-                    <div className="text-2xl font-bold text-blue-700 mt-1">
-                      {summary.avg_fallback_latency_ms > 0
-                        ? `${Math.max(1, Math.round(summary.avg_fallback_latency_ms / Math.max(1, summary.avg_lookup_latency_ms)))}x`
-                        : '100x'}
+                  <div className="p-4 rounded-lg bg-amber-50/60 border border-amber-200">
+                    <span className="text-[11px] text-amber-800 font-medium">Policy Evidence Gaps</span>
+                    <div className="text-2xl font-bold text-amber-900 mt-1">
+                      {summary.insufficient_evidence_queries ?? 0}
                     </div>
-                    <p className="text-[10px] text-slate-500 mt-1">Faster than fresh model call</p>
+                    <p className="text-[10px] text-amber-700 mt-1">
+                      {summary.pending_insufficient_questions_count ?? 0} pending admin review
+                    </p>
                   </div>
                 </div>
               </div>
@@ -1459,7 +1547,311 @@ export const AdminPortal: React.FC = () => {
 
 
         {/* ======================================================== */}
-        {/* TAB 4: VERIFIED SEMANTIC CACHE EXPLORER */}
+        {/* TAB: INSUFFICIENT DATA QUESTIONS (POLICY EVIDENCE GAPS) */}
+        {/* ======================================================== */}
+        {activeTab === 'insufficient' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-xl bg-white border border-slate-200 shadow-2xs">
+              <div>
+                <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <FileQuestion className="h-5 w-5 text-amber-600" />
+                  <span>Insufficient Data Questions (Policy Evidence Gaps)</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
+                  Questions asked by users that could not be answered with high confidence using authorized policy documents.
+                  Use this log to identify missing clauses, upload updated policies, and auto-resolve gaps.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleBatchReEvaluateGaps}
+                  disabled={reEvaluating}
+                  className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-slate-900 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50 transition shadow-2xs"
+                  title="Re-evaluates all pending questions against newly uploaded or updated policies"
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${reEvaluating ? 'animate-spin' : ''}`} />
+                  <span>{reEvaluating ? 'Re-evaluating...' : 'Re-evaluate Against Policies'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Filter & Search Bar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              {/* Status Tabs */}
+              <div className="flex items-center bg-slate-100 p-1 rounded-lg text-xs font-medium">
+                {[
+                  { key: 'ALL', label: 'All', count: insufficientData?.total ?? 0 },
+                  { key: 'PENDING', label: 'Pending', count: insufficientData?.pending_count ?? 0, highlight: (insufficientData?.pending_count ?? 0) > 0 },
+                  { key: 'REVIEWED', label: 'Reviewed', count: insufficientData?.reviewed_count ?? 0 },
+                  { key: 'RESOLVED', label: 'Resolved', count: insufficientData?.resolved_count ?? 0 }
+                ].map((st) => (
+                  <button
+                    key={st.key}
+                    onClick={() => {
+                      setInsufficientStatusFilter(st.key as any);
+                    }}
+                    className={`px-3 py-1.5 rounded-md transition flex items-center gap-1.5 ${
+                      insufficientStatusFilter === st.key
+                        ? 'bg-white text-slate-900 font-bold shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <span>{st.label}</span>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                      st.highlight ? 'bg-amber-100 text-amber-800 font-bold' : 'bg-slate-200 text-slate-700'
+                    }`}>
+                      {st.count}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Search */}
+              <div className="relative min-w-[280px]">
+                <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search questions, reasons, scope..."
+                  value={insufficientSearch}
+                  onChange={(e) => setInsufficientSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      fetchInsufficientQuestions(undefined, e.currentTarget.value);
+                    }
+                  }}
+                  className="w-full pl-9 pr-8 py-1.5 text-xs rounded-lg border border-slate-200 bg-white focus:outline-hidden focus:ring-1 focus:ring-slate-900"
+                />
+                {insufficientSearch && (
+                  <button
+                    onClick={() => {
+                      setInsufficientSearch('');
+                      fetchInsufficientQuestions(undefined, '');
+                    }}
+                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Questions Table */}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
+              {insufficientLoading ? (
+                <div className="p-12 text-center text-xs text-slate-500">
+                  <RefreshCw className="h-5 w-5 animate-spin mx-auto text-slate-400 mb-2" />
+                  Loading insufficient data questions...
+                </div>
+              ) : !insufficientData || insufficientData.items.length === 0 ? (
+                <div className="p-12 text-center text-xs text-slate-500 space-y-2">
+                  <CheckCircle2 className="h-8 w-8 mx-auto text-emerald-500" />
+                  <p className="font-semibold text-slate-800 text-sm">No Insufficient Data Questions Found</p>
+                  <p className="text-slate-500 max-w-md mx-auto">
+                    {insufficientSearch
+                      ? 'No questions matched your search criteria.'
+                      : 'All queries processed by CacheMind have sufficient policy evidence! Questions that cannot be answered will appear here automatically.'}
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[10px]">
+                        <th className="py-3 px-4">User Question & Scope</th>
+                        <th className="py-3 px-4">Classification & Reason</th>
+                        <th className="py-3 px-4">Confidence</th>
+                        <th className="py-3 px-4">Frequency & Timing</th>
+                        <th className="py-3 px-4">Status</th>
+                        <th className="py-3 px-4">Admin Notes</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {insufficientData.items.map((gap) => (
+                        <tr key={gap.id} className="hover:bg-slate-50/70 transition">
+                          <td className="py-3.5 px-4 max-w-xs">
+                            <div className="font-semibold text-slate-900 text-xs leading-snug">
+                              {gap.query_text}
+                            </div>
+                            {gap.normalized_query && gap.normalized_query !== gap.query_text.toLowerCase() && (
+                              <div className="text-[10px] text-slate-400 font-mono mt-0.5 truncate">
+                                Normalized: {gap.normalized_query}
+                              </div>
+                            )}
+                            <div className="flex items-center gap-1.5 mt-1.5">
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-100 text-slate-700">
+                                Scope: {gap.policy_scope}
+                              </span>
+                              {gap.occurrence_count > 1 && (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                  {gap.occurrence_count}x Asked
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4 max-w-xs">
+                            <div>
+                              {gap.retrieval_status === 'DOCUMENT_CONFLICT' ? (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-100 text-purple-800 border border-purple-200">
+                                  Document Conflict
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                                  Insufficient Evidence
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-600 mt-1 line-clamp-2" title={gap.reason || ''}>
+                              {gap.reason || 'No supporting clause found in approved policy documents.'}
+                            </p>
+                          </td>
+
+                          <td className="py-3.5 px-4 whitespace-nowrap">
+                            <span className="font-mono text-slate-700 font-semibold">
+                              {gap.confidence_score ? `${(gap.confidence_score * 100).toFixed(1)}%` : '0.0%'}
+                            </span>
+                            <span className="text-[10px] text-slate-400 block">evidence match</span>
+                          </td>
+
+                          <td className="py-3.5 px-4 whitespace-nowrap text-[11px] text-slate-600">
+                            <div>
+                              <span className="text-slate-400 text-[10px]">Last: </span>
+                              {new Date(gap.last_asked_at).toLocaleDateString()} {new Date(gap.last_asked_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                            {gap.occurrence_count > 1 && (
+                              <div className="text-[10px] text-slate-400 mt-0.5">
+                                First: {new Date(gap.first_asked_at).toLocaleDateString()}
+                              </div>
+                            )}
+                            <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                              User: {gap.user_id ? gap.user_id.slice(0, 8) : 'Anonymous'}
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4 whitespace-nowrap">
+                            {gap.status === 'PENDING' && (
+                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                Pending Review
+                              </span>
+                            )}
+                            {gap.status === 'REVIEWED' && (
+                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                Reviewed
+                              </span>
+                            )}
+                            {gap.status === 'RESOLVED' && (
+                              <div>
+                                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                  Resolved
+                                </span>
+                                {gap.resolved_by_policy_id && (
+                                  <div className="text-[10px] text-emerald-700 font-mono mt-1">
+                                    By: {gap.resolved_by_policy_id}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </td>
+
+                          <td className="py-3.5 px-4 max-w-xs">
+                            {editingGapNotes && editingGapNotes.id === gap.id ? (
+                              <div className="space-y-1.5">
+                                <input
+                                  type="text"
+                                  value={editingGapNotes.notes}
+                                  onChange={(e) => setEditingGapNotes({ ...editingGapNotes, notes: e.target.value })}
+                                  placeholder="Add admin note..."
+                                  className="w-full px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-slate-900 focus:outline-hidden"
+                                />
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    onClick={() => handleSaveGapNotes(gap.id, editingGapNotes.notes)}
+                                    className="px-2 py-0.5 text-[10px] bg-slate-900 text-white rounded font-medium hover:bg-slate-800"
+                                  >
+                                    Save
+                                  </button>
+                                  <button
+                                    onClick={() => setEditingGapNotes(null)}
+                                    className="px-2 py-0.5 text-[10px] text-slate-600 hover:text-slate-900"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex items-start justify-between gap-1 group">
+                                <span className={`text-[11px] ${gap.admin_notes ? 'text-slate-700' : 'text-slate-400 italic'}`}>
+                                  {gap.admin_notes || 'No notes added'}
+                                </span>
+                                <button
+                                  onClick={() => setEditingGapNotes({ id: gap.id, notes: gap.admin_notes || '' })}
+                                  className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-slate-700 transition"
+                                  title="Edit note"
+                                >
+                                  <Edit3 className="h-3 w-3" />
+                                </button>
+                              </div>
+                            )}
+                          </td>
+
+                          <td className="py-3.5 px-4 whitespace-nowrap text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              {gap.status === 'PENDING' && (
+                                <>
+                                  <button
+                                    onClick={() => handleUpdateGapStatus(gap.id, 'REVIEWED')}
+                                    className="px-2 py-1 text-[11px] font-medium bg-slate-100 text-slate-700 rounded hover:bg-slate-200 transition"
+                                  >
+                                    Mark Reviewed
+                                  </button>
+                                  <button
+                                    onClick={() => handleUpdateGapStatus(gap.id, 'RESOLVED')}
+                                    className="px-2 py-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded hover:bg-emerald-100 transition"
+                                  >
+                                    Resolve
+                                  </button>
+                                </>
+                              )}
+                              {gap.status === 'REVIEWED' && (
+                                <>
+                                  <button
+                                    onClick={() => handleUpdateGapStatus(gap.id, 'RESOLVED')}
+                                    className="px-2 py-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded hover:bg-emerald-100 transition"
+                                  >
+                                    Resolve
+                                  </button>
+                                  <button
+                                    onClick={() => handleUpdateGapStatus(gap.id, 'PENDING')}
+                                    className="px-2 py-1 text-[11px] text-slate-500 hover:text-slate-800 transition"
+                                  >
+                                    Re-open
+                                  </button>
+                                </>
+                              )}
+                              {gap.status === 'RESOLVED' && (
+                                <button
+                                  onClick={() => handleUpdateGapStatus(gap.id, 'PENDING')}
+                                  className="px-2 py-1 text-[11px] text-slate-500 hover:text-slate-800 transition"
+                                >
+                                  Re-open
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB: VERIFIED SEMANTIC CACHE EXPLORER */}
         {/* ======================================================== */}
         {activeTab === 'cache' && (
           <div className="space-y-6">

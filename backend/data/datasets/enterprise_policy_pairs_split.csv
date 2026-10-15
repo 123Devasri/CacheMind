@@ -1023,3 +1023,27 @@ What is the company policy regarding policy on into production?,Could you explai
 Do full-time employees qualify for into production under TN-HR-ADARSH-S-HIT?,Do external third-party contractors qualify for into production under TN-HR-ADARSH-S-HIT?,0,tn-hr-adarsh-s-hit_category_neg,train
 What is the company policy regarding policy on programming big?,Could you explain the employee guidelines for policy on programming big under TN-HR-ADARSH-S-HIT?,1,tn-hr-adarsh-s-hit_positive_pair,train
 Do full-time employees qualify for programming big under TN-HR-ADARSH-S-HIT?,Do external third-party contractors qualify for programming big under TN-HR-ADARSH-S-HIT?,0,tn-hr-adarsh-s-hit_category_neg,train
+What is the company policy regarding paid paternity leave duration?,Could you explain the employee guidelines for paid paternity leave duration under TN-HR-PATERNITY-99?,1,tn-hr-paternity-99_positive_pair,train
+Is the paternity leave limit 1.0 numeric_value under TN-HR-PATERNITY-99?,Is the paternity leave limit 2.0 numeric_value under TN-HR-PATERNITY-99?,0,tn-hr-paternity-99_numeric_neg,train
+Do full-time employees qualify for paternity leave under TN-HR-PATERNITY-99?,Do external third-party contractors qualify for paternity leave under TN-HR-PATERNITY-99?,0,tn-hr-paternity-99_category_neg,train
+What is the company policy regarding paid paternity leave duration?,Could you explain the employee guidelines for paid paternity leave duration under TN-HR-PATERNITY-99?,1,tn-hr-paternity-99_positive_pair,train
+Is the paternity leave limit 10.0 days under TN-HR-PATERNITY-99?,Is the paternity leave limit 20.0 days under TN-HR-PATERNITY-99?,0,tn-hr-paternity-99_numeric_neg,train
+Do full-time employees qualify for paternity leave under TN-HR-PATERNITY-99?,Do external third-party contractors qualify for paternity leave under TN-HR-PATERNITY-99?,0,tn-hr-paternity-99_category_neg,train
+What is the company policy regarding business travel and daily per diem?,Could you explain the employee guidelines for business travel and daily per diem under TN-TEST-GRANULAR-01?,1,tn-test-granular-01_positive_pair,train
+Is the travel allowance limit 1.0 numeric_value under TN-TEST-GRANULAR-01?,Is the travel allowance limit 2.0 numeric_value under TN-TEST-GRANULAR-01?,0,tn-test-granular-01_numeric_neg,train
+Do full-time employees qualify for travel allowance under TN-TEST-GRANULAR-01?,Do external third-party contractors qualify for travel allowance under TN-TEST-GRANULAR-01?,0,tn-test-granular-01_category_neg,train
+What is the company policy regarding business travel and daily per diem?,Could you explain the employee guidelines for business travel and daily per diem under TN-TEST-GRANULAR-01?,1,tn-test-granular-01_positive_pair,train
+Is the travel allowance limit 3500.0 inr under TN-TEST-GRANULAR-01?,Is the travel allowance limit 7000.0 inr under TN-TEST-GRANULAR-01?,0,tn-test-granular-01_numeric_neg,train
+Do full-time employees qualify for travel allowance under TN-TEST-GRANULAR-01?,Do external third-party contractors qualify for travel allowance under TN-TEST-GRANULAR-01?,0,tn-test-granular-01_category_neg,train
+What is the company policy regarding policy on section mobile?,Could you explain the employee guidelines for policy on section mobile under TN-TEST-GRANULAR-01?,1,tn-test-granular-01_positive_pair,train
+Is the section mobile limit 2.0 numeric_value under TN-TEST-GRANULAR-01?,Is the section mobile limit 4.0 numeric_value under TN-TEST-GRANULAR-01?,0,tn-test-granular-01_numeric_neg,train
+Do full-time employees qualify for section mobile under TN-TEST-GRANULAR-01?,Do external third-party contractors qualify for section mobile under TN-TEST-GRANULAR-01?,0,tn-test-granular-01_category_neg,train
+What is the company policy regarding policy on employees eligible?,Could you explain the employee guidelines for policy on employees eligible under TN-TEST-GRANULAR-01?,1,tn-test-granular-01_positive_pair,train
+Is the employees eligible limit 1500.0 inr under TN-TEST-GRANULAR-01?,Is the employees eligible limit 3000.0 inr under TN-TEST-GRANULAR-01?,0,tn-test-granular-01_numeric_neg,train
+Do full-time employees qualify for employees eligible under TN-TEST-GRANULAR-01?,Do external third-party contractors qualify for employees eligible under TN-TEST-GRANULAR-01?,0,tn-test-granular-01_category_neg,train
+What is the company policy regarding policy on section core?,Could you explain the employee guidelines for policy on section core under TN-TEST-RENAME-01?,1,tn-test-rename-01_positive_pair,train
+Is the section core limit 1.0 numeric_value under TN-TEST-RENAME-01?,Is the section core limit 2.0 numeric_value under TN-TEST-RENAME-01?,0,tn-test-rename-01_numeric_neg,train
+Do full-time employees qualify for section core under TN-TEST-RENAME-01?,Do external third-party contractors qualify for section core under TN-TEST-RENAME-01?,0,tn-test-rename-01_category_neg,train
+What is the company policy regarding standard business hours and shift schedules?,Could you explain the employee guidelines for standard business hours and shift schedules under TN-TEST-RENAME-01?,1,tn-test-rename-01_positive_pair,train
+Is the office working hours limit 10.0 numeric_value under TN-TEST-RENAME-01?,Is the office working hours limit 20.0 numeric_value under TN-TEST-RENAME-01?,0,tn-test-rename-01_numeric_neg,train
+Do full-time employees qualify for office working hours under TN-TEST-RENAME-01?,Do external third-party contractors qualify for office working hours under TN-TEST-RENAME-01?,0,tn-test-rename-01_category_neg,train

@@ -2,6 +2,13 @@
 
 An enterprise-grade, end-to-end Machine Learning and AI governance system providing a policy-governed semantic cache for organizational assistants (HR, Finance, IT, Operations). Built to eliminate redundant generative inference costs, slash response latencies from seconds to single-digit milliseconds, and strictly enforce deterministic policy boundaries with exact statistical false-hit rate guarantees.
 
+
+---
+
+> **Key Architecture & Model Documentation**:
+> - Detailed System Flow & Algorithm Inventory: [`ALGORITHMS_AND_FLOW.md`](file:///c:/projects/CacheMind/ALGORITHMS_AND_FLOW.md)
+> - Machine Learning Models, Training Scripts & Runtime Inference Code: [`MODELS_TRAINING_AND_USAGE.md`](file:///c:/projects/CacheMind/MODELS_TRAINING_AND_USAGE.md)
+
 ---
 
 ## 1. Fixed ML Model Stack (Strictly Implemented)

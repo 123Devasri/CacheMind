@@ -19,7 +19,9 @@ import {
   CandidatePair,
   SettingsData,
   User,
-  AuthResponse
+  AuthResponse,
+  InsufficientDataQuestion,
+  InsufficientDataQuestionListResponse
 } from '../types';
 
 export const api = axios.create({
@@ -196,6 +198,37 @@ export const updateAuthoritativePolicy = async (
 
 export const deactivatePolicy = async (policyId: string): Promise<any> => {
   const res = await api.post(`/admin/policies/${policyId}/deactivate`);
+  return res.data;
+};
+
+export const getInsufficientDataQuestions = async (params?: {
+  status?: string;
+  search?: string;
+  policy_scope?: string;
+  limit?: number;
+  offset?: number;
+  sort_by?: string;
+  order?: string;
+}): Promise<InsufficientDataQuestionListResponse> => {
+  const res = await api.get('/admin/insufficient-data-questions', { params });
+  return res.data;
+};
+
+export const updateInsufficientDataQuestion = async (
+  questionId: string,
+  update: { status?: string; admin_notes?: string }
+): Promise<InsufficientDataQuestion> => {
+  const res = await api.patch(`/admin/insufficient-data-questions/${questionId}`, update);
+  return res.data;
+};
+
+export const reEvaluateInsufficientDataQuestions = async (): Promise<{
+  status: string;
+  message: string;
+  resolved_count: number;
+  remaining_pending: number;
+}> => {
+  const res = await api.post('/admin/insufficient-data-questions/re-evaluate');
   return res.data;
 };
 

@@ -489,8 +489,31 @@ def seed_database_and_datasets(db: Session):
     print(f"Saved {len(REAL_QUESTION_PAIRS)} pairs to {all_pairs_path} and {split_pairs_path}")
     return len(REAL_TAMIL_NADU_POLICIES), len(REAL_CACHE_ENTRIES)
 
+def ensure_baseline_policies(db: Session):
+    """
+    Seeds baseline enterprise policy documents into the knowledge base if no policies exist.
+    Leaves CachedEntry and FAISS completely empty, strictly enforcing cache isolation rules.
+    """
+    if db.query(Policy).count() > 0:
+        return
+    for p_data in REAL_TAMIL_NADU_POLICIES:
+        pol = Policy(**p_data)
+        db.add(pol)
+        db.commit()
+        p_ver = PolicyVersion(
+            policy_id=pol.policy_id,
+            version="1.0",
+            change_summary="Tamil Nadu enterprise policy baseline document.",
+            content=pol.content,
+            is_active=True
+        )
+        db.add(p_ver)
+        db.commit()
+    print("[SeedService] Initialized baseline enterprise policy documents in knowledge base.")
+
 if __name__ == "__main__":
     from app.db.session import SessionLocal
     db = SessionLocal()
     p_cnt, c_cnt = seed_database_and_datasets(db)
     print(f"Seeding complete! Policies: {p_cnt}, Cached Entries: {c_cnt}")
+
