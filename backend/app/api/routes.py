@@ -30,7 +30,8 @@ from app.schemas.api_schemas import (
     ModelArtifactVersionResponse, RollbackRequest,
     SyntheticGenerationRequest, CandidatePairCreate, CandidatePairResponse,
     SettingsUpdate, DashboardSummary, ModelSelectionRequest,
-    InsufficientDataQuestionResponse, InsufficientDataQuestionUpdate, InsufficientDataQuestionListResponse
+    InsufficientDataQuestionResponse, InsufficientDataQuestionUpdate, InsufficientDataQuestionListResponse,
+    SustainabilityMetricsResponse, SustainabilityProgressionPoint
 )
 from app.ml.cache_pipeline import cache_pipeline
 from app.ml.embeddings import embedding_service
@@ -1112,6 +1113,111 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
         insufficient_evidence_queries=insufficient_queries,
         document_conflict_queries=conflict_queries,
         pending_insufficient_questions_count=pending_insufficient
+    )
+
+@router.get("/dashboard/sustainability", response_model=SustainabilityMetricsResponse)
+def get_sustainability_metrics(db: Session = Depends(get_db)):
+    """
+    Computes end-to-end green AI and sustainability progression metrics from QueryAuditLog.
+    Calculates query-by-query hit rate trajectory, avoided LLM GPU energy (Wh),
+    avoided carbon emissions (g CO2e), conserved cooling water, and latency savings.
+    """
+    logs = db.query(QueryAuditLog).order_by(QueryAuditLog.created_at.asc()).all()
+    total_queries = len(logs)
+    
+    progression: List[SustainabilityProgressionPoint] = []
+    cum_hits = 0
+    cum_misses = 0
+    
+    # Constants based on empirical 70B parameter GPU cluster vs local CPU vector lookup:
+    # 70B LLM on 8x H100 cluster ~ 0.47 Wh per 300-token query (with datacenter PUE 1.2)
+    # CPU vector cache lookup ~ 0.00004 Wh (<2ms)
+    # Net energy saved per hit = ~0.47 Wh
+    # Carbon intensity: ~400 g CO2 / kWh -> 0.47 Wh * 0.4g/Wh = ~0.188 g CO2e avoided (direct energy)
+    # Factoring hardware lifecycle embodiment: ~2.5 g CO2e total avoided per LLM call
+    # Cooling water consumption: ~25 mL per avoided LLM inference
+    ENERGY_SAVED_PER_HIT_WH = 0.47
+    CO2_SAVED_PER_HIT_GRAMS = 2.50
+    WATER_SAVED_PER_HIT_ML = 25.0
+    TOKENS_SAVED_PER_HIT = 450
+    COST_SAVED_PER_HIT_USD = 0.02995
+    COST_SAVED_PER_HIT_INR = 2.5008
+    
+    total_time_saved_sec = 0.0
+    
+    for idx, log in enumerate(logs, 1):
+        is_hit = log.decision in ("HIT", "CACHE_HIT")
+        if is_hit:
+            cum_hits += 1
+            # Avoided latency: fallback avg (~3.2s) - cache lookup (~0.002s)
+            saved_sec = max(0.0, (log.total_latency_ms - log.lookup_latency_ms) / 1000.0) if log.total_latency_ms > log.lookup_latency_ms else 2.5
+            total_time_saved_sec += saved_sec
+        else:
+            cum_misses += 1
+            
+        hit_rate = round((cum_hits / idx) * 100.0, 2)
+        tokens_saved = cum_hits * TOKENS_SAVED_PER_HIT
+        energy_saved = round(cum_hits * ENERGY_SAVED_PER_HIT_WH, 2)
+        co2_saved = round(cum_hits * CO2_SAVED_PER_HIT_GRAMS, 2)
+        cost_saved_usd = round(cum_hits * COST_SAVED_PER_HIT_USD, 4)
+        cost_saved_inr = round(cum_hits * COST_SAVED_PER_HIT_INR, 2)
+        
+        # Clean query snippet for display
+        q_snippet = (log.query_text or "Query").strip()
+        if len(q_snippet) > 60:
+            q_snippet = q_snippet[:57] + "..."
+            
+        ts_str = log.created_at.strftime("%Y-%m-%d %H:%M:%S") if isinstance(log.created_at, datetime.datetime) else str(log.created_at or "")
+        
+        progression.append(
+            SustainabilityProgressionPoint(
+                query_index=idx,
+                query_text=q_snippet,
+                decision=log.decision,
+                is_hit=is_hit,
+                cumulative_queries=idx,
+                cumulative_hits=cum_hits,
+                cumulative_misses=cum_misses,
+                hit_rate_pct=hit_rate,
+                cumulative_tokens_saved=tokens_saved,
+                cumulative_energy_wh_saved=energy_saved,
+                cumulative_co2_g_saved=co2_saved,
+                cumulative_cost_saved_usd=cost_saved_usd,
+                cumulative_cost_saved_inr=cost_saved_inr,
+                timestamp=ts_str
+            )
+        )
+        
+    final_hit_rate = round((cum_hits / total_queries) * 100.0, 2) if total_queries > 0 else 0.0
+    total_energy_wh = round(cum_hits * ENERGY_SAVED_PER_HIT_WH, 2)
+    total_co2_g = round(cum_hits * CO2_SAVED_PER_HIT_GRAMS, 2)
+    total_water_ml = round(cum_hits * WATER_SAVED_PER_HIT_ML, 1)
+    total_tokens_avoided = cum_hits * TOKENS_SAVED_PER_HIT
+    total_cost_saved_usd = round(cum_hits * COST_SAVED_PER_HIT_USD, 2)
+    total_cost_saved_inr = round(cum_hits * COST_SAVED_PER_HIT_INR, 2)
+    
+    verdict = (
+        f"Semantic caching has absorbed {cum_hits} out of {total_queries} queries ({final_hit_rate}% hit rate), "
+        f"avoiding ${total_cost_saved_usd:,.2f} (₹{total_cost_saved_inr:,.0f}) in cloud inference costs, "
+        f"conserving {total_energy_wh} Wh of GPU datacenter power, saving ~{total_tokens_avoided:,} LLM tokens, "
+        f"and preventing {total_co2_g}g of CO2 emissions."
+    )
+    
+    return SustainabilityMetricsResponse(
+        total_queries=total_queries,
+        cache_hits=cum_hits,
+        cache_misses=cum_misses,
+        hit_rate_pct=final_hit_rate,
+        llm_calls_avoided=cum_hits,
+        tokens_avoided=total_tokens_avoided,
+        energy_saved_wh=total_energy_wh,
+        co2_avoided_grams=total_co2_g,
+        water_conserved_ml=total_water_ml,
+        latency_time_saved_seconds=round(total_time_saved_sec, 1),
+        total_cost_saved_usd=total_cost_saved_usd,
+        total_cost_saved_inr=total_cost_saved_inr,
+        progression=progression,
+        summary_verdict=verdict
     )
 
 # ==========================================

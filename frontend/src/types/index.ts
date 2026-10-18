@@ -375,3 +375,37 @@ export interface InsufficientDataQuestionListResponse {
   resolved_count: number;
 }
 
+export interface SustainabilityProgressionPoint {
+  query_index: number;
+  query_text: string;
+  decision: string;
+  is_hit: boolean;
+  cumulative_queries: number;
+  cumulative_hits: number;
+  cumulative_misses: number;
+  hit_rate_pct: number;
+  cumulative_tokens_saved: number;
+  cumulative_energy_wh_saved: number;
+  cumulative_co2_g_saved: number;
+  cumulative_cost_saved_usd: number;
+  cumulative_cost_saved_inr: number;
+  timestamp: string;
+}
+
+export interface SustainabilityData {
+  total_queries: number;
+  cache_hits: number;
+  cache_misses: number;
+  hit_rate_pct: number;
+  llm_calls_avoided: number;
+  tokens_avoided: number;
+  energy_saved_wh: number;
+  co2_avoided_grams: number;
+  water_conserved_ml: number;
+  latency_time_saved_seconds: number;
+  total_cost_saved_usd?: number;
+  total_cost_saved_inr?: number;
+  progression: SustainabilityProgressionPoint[];
+  summary_verdict: string;
+}
+

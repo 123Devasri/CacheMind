@@ -21,7 +21,8 @@ import {
   User,
   AuthResponse,
   InsufficientDataQuestion,
-  InsufficientDataQuestionListResponse
+  InsufficientDataQuestionListResponse,
+  SustainabilityData
 } from '../types';
 
 export const api = axios.create({
@@ -427,5 +428,10 @@ export const getActiveModelInfo = async (): Promise<{
   logistic_regression: any;
 }> => {
   const res = await api.get('/admin/models/active');
+  return res.data;
+};
+
+export const getSustainabilityMetrics = async (): Promise<SustainabilityData> => {
+  const res = await api.get('/dashboard/sustainability');
   return res.data;
 };
