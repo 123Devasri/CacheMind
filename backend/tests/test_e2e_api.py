@@ -70,3 +70,25 @@ def test_query_clusters_api():
     data = res.json()
     assert data["status"] == "completed"
     assert len(data["clusters"]) >= 2
+
+def test_sustainability_metrics_api():
+    client.post("/api/query", json={"query": "Hello"})
+    res = client.get("/api/dashboard/sustainability")
+    assert res.status_code == 200
+    data = res.json()
+    assert "total_queries" in data
+    assert "cache_hits" in data
+    assert "hit_rate_pct" in data
+    assert "energy_saved_wh" in data
+    assert "co2_avoided_grams" in data
+    assert "total_cost_saved_usd" in data
+    assert "total_cost_saved_inr" in data
+    assert "progression" in data
+    assert isinstance(data["progression"], list)
+    assert len(data["progression"]) >= 1
+    first_pt = data["progression"][0]
+    assert "query_index" in first_pt
+    assert "cumulative_hits" in first_pt
+    assert "hit_rate_pct" in first_pt
+    assert "cumulative_cost_saved_usd" in first_pt
+    assert "cumulative_cost_saved_inr" in first_pt

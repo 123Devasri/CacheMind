@@ -397,3 +397,36 @@ class InsufficientDataQuestionListResponse(BaseModel):
     pending_count: int
     reviewed_count: int
     resolved_count: int
+
+# --- Sustainability & Green AI Metrics Schemas ---
+class SustainabilityProgressionPoint(BaseModel):
+    query_index: int
+    query_text: str
+    decision: str
+    is_hit: bool
+    cumulative_queries: int
+    cumulative_hits: int
+    cumulative_misses: int
+    hit_rate_pct: float
+    cumulative_tokens_saved: int
+    cumulative_energy_wh_saved: float
+    cumulative_co2_g_saved: float
+    cumulative_cost_saved_usd: float
+    cumulative_cost_saved_inr: float
+    timestamp: str
+
+class SustainabilityMetricsResponse(BaseModel):
+    total_queries: int
+    cache_hits: int
+    cache_misses: int
+    hit_rate_pct: float
+    llm_calls_avoided: int
+    tokens_avoided: int
+    energy_saved_wh: float
+    co2_avoided_grams: float
+    water_conserved_ml: float
+    latency_time_saved_seconds: float
+    total_cost_saved_usd: float
+    total_cost_saved_inr: float
+    progression: List[SustainabilityProgressionPoint]
+    summary_verdict: str
