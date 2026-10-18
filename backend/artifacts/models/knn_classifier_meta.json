@@ -1,0 +1,11 @@
+{
+  "model_type": "k_nearest_neighbors",
+  "n_neighbors": 5,
+  "metric": "minkowski",
+  "weights": "distance",
+  "metrics": {
+    "accuracy": 1.0,
+    "f1": 1.0
+  },
+  "training_samples": 535
+}

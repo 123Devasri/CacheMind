@@ -1,46 +1,1049 @@
 q1,q2,label,group,split
-How many days of annual leave do permanent employees receive?,How many days of annual leave do permanent employees get?,1,hr_leave_fte_direct,test
-How many annual vacation days do permanent employees receive?,How many days of annual leave do permanent employees get?,1,hr_leave_fte_direct,test
-How many annual leave days do full-time employees get?,What is the vacation entitlement for permanent staff?,1,hr_leave_fte,calibration
-How many days of paid time off do regular workers receive?,What is the annual PTO limit for full-time employees?,1,hr_leave_fte,calibration
-Do contractors get paid time off?,Are temporary workers and vendors entitled to paid leave?,1,hr_leave_contractor,calibration
-Are contractors entitled to paid vacation days?,Do independent contractors receive paid vacation?,1,hr_leave_contractor_direct,test
-Can employees work from home two days a week?,Is remote work permitted up to 2 days weekly?,1,hr_wfh_days,train
-How many days per week can employees work remotely?,How many days a week can staff work from home?,1,hr_wfh_days_direct,train
-What is the daily meal allowance for travel in the US?,What is the daily meal stipend for US travel?,1,fin_perdiem_us_direct,train
-What is the meal allowance for travel in America?,What is the daily per diem for US business trips?,1,fin_perdiem_us,validation
-How much can I claim for daily meals in the USA?,What is the per diem meal rate in the US?,1,fin_perdiem_us,validation
-What is the domestic travel allowance in India?,What is the domestic travel per diem rate in India?,1,fin_perdiem_india_direct,validation
-What is the daily allowance for travel in India?,What is the per diem rate for Indian domestic trips?,1,fin_perdiem_india,train
-How many rupees is the per diem in India?,What is the daily travel meal stipend in INR?,1,fin_perdiem_india,train
-Is VPN mandatory when accessing internal enterprise systems remotely?,Is VPN required to access company systems from home?,1,it_vpn_direct,calibration
-Is VPN needed to work from home?,Do I have to connect to company VPN for remote access?,1,it_vpn_remote,calibration
-Is disk encryption required on company laptops?,Must corporate laptops have hard drive encryption enabled?,1,it_encryption,train
-Can I take 20 days vacation this year?,Are 20 days of annual leave provided to employees?,1,hr_leave_fte_2,train
-Do interns qualify for company paid vacation?,Can summer interns claim paid time off?,1,hr_intern_pto,train
-What is the sick leave policy for contractors?,Do contractors receive sick pay from the firm?,1,hr_leave_contractor_2,train
-Can I expense $100 without a receipt?,Are receipts required for 100 dollar expenses?,1,fin_receipt_req,validation
-How much can I spend on food in New York on travel?,What is the meal budget for US domestic travel?,1,fin_perdiem_us_2,train
-What is the daily food allowance in Bangalore?,How much per diem is provided for business trips to India?,1,fin_perdiem_india_2,train
-Is Okta SSO required for cloud logins?,Must users authenticate through Okta single sign-on?,1,it_sso_cloud,train
-What happens to leftover annual leave at year end?,Do unused vacation days carry over into next year?,1,hr_leave_rollover,test
-How many annual leave days do permanent employees receive?,How many leave days do contractors get?,0,hr_mismatch_category,calibration
-Can permanent staff work remotely 2 days a week?,Can permanent staff work remotely 5 days a week?,0,hr_mismatch_numeric,train
-Do full-time workers get 20 days off?,Do full-time workers get 10 days off?,0,hr_mismatch_numeric,train
-Are contractors entitled to paid leave?,Are contractors not entitled to paid leave?,0,hr_negation_flip,calibration
-What is the travel per diem in the US?,What is the travel allowance in India?,0,fin_jurisdiction_conflict,validation
-Is the US travel meal rate $75 a day?,Is the US travel meal rate $150 a day?,0,fin_amount_conflict,calibration
-Do I need receipts for expenses over $25?,Do I need receipts for expenses under $25?,0,fin_threshold_conflict,train
-Is India per diem INR 3000?,Is India per diem INR 5000?,0,fin_amount_conflict,calibration
-Is VPN mandatory for office employees?,Is VPN mandatory for remote workers?,0,it_scope_conflict,test
-Can I use my personal laptop for work?,Can I use corporate laptops for work?,0,it_device_conflict,validation
-Do contractors get company-issued laptops?,Do permanent employees get company-issued laptops?,0,it_category_conflict,train
-How many annual leave days do permanent employees receive?,What is the daily per diem for US business trips?,0,cross_domain_hr_fin,calibration
-Can employees work from home two days a week?,Do I need receipts for travel expenses?,0,cross_domain_hr_fin_2,train
-What is the travel per diem in the US?,Is corporate VPN mandatory for remote work?,0,cross_domain_fin_it,train
-How many days of paid time off do regular workers receive?,Must enterprise laptops have full disk encryption?,0,cross_domain_hr_it,train
-What is the domestic travel allowance in India?,How many days per week can staff work remotely?,0,cross_domain_fin_hr,test
-Is Okta SSO required for cloud logins?,What is the daily travel meal stipend in INR?,0,cross_domain_it_fin,train
-Are contractors entitled to paid leave?,What happens to leftover vacation at year end?,0,hr_diff_topics,train
-What is the domestic travel allowance in India?,Do I need receipts for expenses over $25?,0,fin_diff_topics,train
-Is disk encryption optional on company MacBooks?,Is disk encryption compulsory on enterprise laptops?,0,it_opt_compulsory,test
+How i get hair on bald head?,"If I shave my head for 2 years as am getting bald and then grew my hair, will the hair will be same as when I intially have? Or I loose more hair?",0,qqp_neg_4,calibration
+What is the difference between a neutral state and a buffer state?,"If every state of the USA declared war against each other, which would win?",0,qqp_neg_4,calibration
+What is the mean of future budget?,What is the meaning of the future?,0,qqp_neg_4,calibration
+How do I register my domain site email?,How do you register a .an domain?,0,qqp_neg_4,calibration
+What is the strongest structure or strongest shape under compression?,What is the strongest Kevlar cord?,0,qqp_neg_4,calibration
+What is the ideal life after retirement?,What's life after retirement?,0,qqp_neg_4,calibration
+How do I access Torbox in India?,How do I access Google.com from India?,0,qqp_neg_4,calibration
+Was six party talks successful?,Which course is better in NICMAR?,0,qqp_neg_4,calibration
+What are some yakshini mantras?,What is a Yantra & Mantra?,0,qqp_neg_4,calibration
+What is our stance against Pakistan?,What is the stance of Pakistan in the possession of weapons of mass destruction by North korea? Does it support DPRK or is it against DPRK?,0,qqp_neg_4,calibration
+Are exocytosis and endocytosis examples of active or passive transport?,What are examples of passive transport in cells?,0,qqp_neg_4,calibration
+Which one is better polo diesel or grand i10 petrol?,What is the best diet for a growing decathlete?,0,qqp_neg_4,calibration
+In how many ways can we distribute 10 identical looking pencils to 4 students so that each student gets at least one pencil?,In how many ways 12 apples can be distributed among 4 children such that every child gets at least 2 apples?,0,qqp_neg_4,calibration
+What is the alternative to machine learning?,How do I over-sample a multi-class imbalance data set?,0,qqp_neg_4,calibration
+Does Fab currently offer new employees stock options or RSUs?,Does Uber currently offer new employees stock options or RSUs?,0,qqp_neg_4,calibration
+What is it like to work in Asahi India Glass? What will be the pay scale after one or two years?,When will we get the Call Letter after we get the Letter of Intent in Asahi India Glass recruitment?,0,qqp_neg_4,calibration
+What are good websites for escorts?,How do I find a good escort?,0,qqp_neg_4,calibration
+Is it normal for older men to be attracted to young women?,Why am I attracted to older men?,0,qqp_neg_4,calibration
+How would you review the site Waveclues?,Is there a good pay for reviews site out there?,0,qqp_neg_4,calibration
+What is the greatest mystery in the universe?,What is the greatest mystery of all time?,0,qqp_neg_4,calibration
+Do full-time permanent employees qualify for html css under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for html css under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_6,calibration
+Why do rockets look white?,Why are rockets and boosters painted white?,1,qqp_pos_0,train
+How can I be a good geologist?,What should I do to be a great geologist?,1,qqp_pos_0,train
+How do I make friends.,How to make friends ?,1,qqp_pos_0,train
+Is Career Launcher good for RBI Grade B preparation?,How is career launcher online program for RBI Grade B?,1,qqp_pos_0,train
+What are some examples of products that can be make from crude oil?,What are some of the products made from crude oil?,1,qqp_pos_0,train
+What does manipulation mean?,What does manipulation means?,1,qqp_pos_0,train
+How should I prepare for CA final law?,How one should know that he/she completely prepare for CA final exam?,1,qqp_pos_0,train
+What can make Physics easy to learn?,How can you make physics easy to learn?,1,qqp_pos_0,train
+What was your first sexual experience like?,What was your first sexual experience?,1,qqp_pos_0,train
+How do we prepare for UPSC?,How do I prepare for civil service?,1,qqp_pos_0,train
+Why are so many Quora users posting questions that are readily answered on Google?,Why do people ask Quora questions which can be answered easily by Google?,1,qqp_pos_0,train
+How is the new Harry Potter book 'Harry Potter and the Cursed Child'?,How bad is the new book by J.K Rowling?,1,qqp_pos_0,train
+Astrology: I am a Capricorn Sun Cap moon and cap rising...what does that say about me?,"I'm a triple Capricorn (Sun, Moon and ascendant in Capricorn) What does this say about me?",1,qqp_pos_0,train
+What would a Trump presidency mean for current international master’s students on an F1 visa?,How will a Trump presidency affect the students presently in US or planning to study in US?,1,qqp_pos_0,train
+How do I read and find my YouTube comments?,How can I see all my Youtube comments?,1,qqp_pos_0,train
+I was suddenly logged off Gmail. I can't remember my Gmail password and just realized the recovery email is no longer alive. What can I do?,I can't remember my Gmail password or my recovery email. How can I recover my e-mail?,1,qqp_pos_0,train
+What are some special cares for someone with a nose that gets stuffy during the night?,How can I keep my nose from getting stuffy at night?,1,qqp_pos_0,train
+"Will a Blu Ray play on a regular DVD player? If so, how?",How can you play a Blu Ray DVD on a regular DVD player?,1,qqp_pos_0,train
+What Game of Thrones villain would be the most likely to give you mercy?,What Game of Thrones villain would you most like to be at the mercy of?,1,qqp_pos_0,train
+What is the best/most memorable thing you've ever eaten and why?,What is the most delicious dish you've ever eaten and why?,1,qqp_pos_0,train
+How can we acquire a positive morality?,What are time deposits? Are RD and FD types of time deposits?,0,qqp_neg_9,test
+Do you need friends?,Why do we need friends?,0,qqp_neg_9,test
+How is petrol or diesel pumped up in a filling station using a motor without igniting any fire?,What happens when you fill a petrol car with diesel? What is the solution if such an incident happened?,0,qqp_neg_9,test
+What is journalism for you?,What is journalism?,0,qqp_neg_9,test
+What are the best songs for low voices?,What are some songs for a sweet airy mezzo voice?,0,qqp_neg_9,test
+When was the birth of the trigonometric functions?,Who were the creators of trigonometry?,0,qqp_neg_9,test
+Can anyone predict my birth chart?,What can you tell me regarding this birth chart?,0,qqp_neg_9,test
+How do I know if someone blocked my texts?,If I turn of my user id off can I text someone that blocked me?,0,qqp_neg_9,test
+Why should I learn web design?,How can I learn about web design?,0,qqp_neg_9,test
+What Anna Hazare think about PM Modi?,What do you people think of Mr. Arvind Kejriwal and his AAP?,0,qqp_neg_9,test
+What is it like to be a private banker?,What is like to be a private banker in Switzerland?,0,qqp_neg_9,test
+Why did the puppet they used for Yoda in Episode I suck so bad?,"Why do people not question ""news"" posts and opinions posted on social media websites?",0,qqp_neg_9,test
+What are some unwritten rules in USA?,What are some unwritten rules you have for your home?,0,qqp_neg_9,test
+Can I use Jio SIM in iPhone 5s?,Does iPhone 5S support JIO VoLTE?,0,qqp_neg_9,test
+What it is like to be cheated upon in a relationship?,What is it like to be in a relationship with someone you cheated with?,0,qqp_neg_9,test
+"What's the best on-line calender/scheduling/booking system? Something that allows me to show my availability & customers can 'request' to meet me. When I 'accept' their request, the appointment pops into our calendars & reminders are automated.",Is there a web service that can send appointment sms-reminders to customers extracting data from Google calendar?,0,qqp_neg_9,test
+"What does this saying mean; ""Don't trust everything you see even salt looks like sugar""?","People say ""don't try to please others."" Does being nice to others mean pleasing them?",0,qqp_neg_9,test
+How should I start small business effectively?,How should I start a small business in construction?,0,qqp_neg_9,test
+"Should I repeat 2nd year in college, or find a new college? It's a 5 year course.",I study in Ashutosh College in Kolkata. Can I study in any other college in India in my 2nd year?,0,qqp_neg_9,test
+On what online platforms can I post ads for beer money opportunity?,What online platforms can I post ads for beer money opportunity?,0,qqp_neg_9,test
+What is the company policy regarding policy on local taxi?,Could you explain the employee guidelines for policy on local taxi under TN-FIN-TRAVEL-03?,1,tn-fin-travel-03_pos_2,train
+What is the company policy regarding policy on cgpa semester?,Could you explain the employee guidelines for policy on cgpa semester under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_36,calibration
+Why are we worried about others' opinions?,Why do we care for others' opinion and about what others think about us?,1,qqp_pos_4,train
+"In the play ""A Raisin in the Sun"", why do Walter ad Beneatha argue?","In ""A Raisin in the Sun"", why do Walter and Beneatha argue?",1,qqp_pos_4,train
+What are the qualities of a good leader?,What are some good qualities of a leader?,1,qqp_pos_4,train
+Will Modi win in 2019?,Can Narendra Modi become Prime Minister of India in 2019?,1,qqp_pos_4,train
+Which online test series is best for GATE 2017 in CS stream?,Which test series is the best for GATE computer science stream?,1,qqp_pos_4,train
+How many months does it take to gain knowledge in developing Android apps from scratch?,How much time does it take to learn Android app development from scratch?,1,qqp_pos_4,train
+What are your New Year's resolutions for 2017?,What is your creative New Year's resolution for 2017?,1,qqp_pos_4,train
+How accurately can a mental illness can be diagnosed?,How can I accurately diagnose and medicate my mental illness?,1,qqp_pos_4,train
+What are the signs of an ultra smart person playing dumb?,What are signs of ultra smart people hiding their intelligence?,1,qqp_pos_4,train
+Who is disrupting Bloomberg?,Who will disrupt Bloomberg?,1,qqp_pos_4,train
+If dark energy is created with expansion can infinite of it be created?,"If energy is not conserved in an expanding universe, is potential energy infinite (the energy that can be created is infinite)?",1,qqp_pos_4,train
+How can you recover your Gmail password?,"I do not remember my password to my Gmail account, how can I recover my account?",1,qqp_pos_4,train
+Will there be another billion dollar lottery Jackpot?,When will the lottery reach the next billion dollar jackpot?,1,qqp_pos_4,train
+How will the implementation of GST bill impact the lives of common people?,What exactly is GST bill and how exactly will it affect the common people?,1,qqp_pos_4,train
+How do you potty train a 4 months Pitbull?,How do I potty train my two-month-old Labrador pup?,1,qqp_pos_4,train
+How can we make the world a better place to live in for the future generations?,What can I do to make the world a better place?,1,qqp_pos_4,train
+What is my puk code?,What's the PUK for TF64SIMC4?,1,qqp_pos_4,train
+How do I create a new shell in a new terminal using C programming (Linux terminal)?,How do I create a new Terminal and new shell in Linux using C programming?,1,qqp_pos_4,train
+"What exactly is the ""Common Core Initiative/Standards"" and what are the pros and cons?",What are the pros and cons of the Common Core Standards Initiative?,1,qqp_pos_4,train
+How do I choose a journal to publish my paper?,Where do I publish my paper?,1,qqp_pos_4,train
+What are the most interesting foods you have eaten in any country?,What is the most delicious dish you've ever eaten and why?,1,qqp_pos_6,train
+Why does understanding death philosophical?,What makes understanding death philosophical?,1,qqp_pos_6,train
+What are the pros and cons of the German Shepherd dog?,What are the pros and cons of having a pet German Shepherd?,1,qqp_pos_6,train
+Earthquake resistant homes?,How do earthquake resistant buildings work?,1,qqp_pos_6,train
+What are the most important books ever written?,What is the most important book you have ever read?,1,qqp_pos_6,train
+What is the best answer to what you did in two years gap in a job interview?,What is the best excuse to explain a gap (of one or two years) in your job career for a job interview?,1,qqp_pos_6,train
+How can I become a good speaker?,What should I do to be a good Speaker?,1,qqp_pos_6,train
+What is the best phone to buy below 15k?,Which are best mobile phones to buy under 15000?,1,qqp_pos_6,train
+What would be the best way to quit smoking?,How did you quit/stop smoking?,1,qqp_pos_6,train
+How can I write a letter to Mr. Narendra Modi?,How can I write to Narendra Modi?,1,qqp_pos_6,train
+What do countries do to prevent war?,How should countries prevent war?,1,qqp_pos_6,train
+How can I become a billionaire?,How can I become a billionaire (in finance)?,1,qqp_pos_6,train
+What year did the letter J come?,When was the Letter J created?,1,qqp_pos_6,train
+How do we start a business?,How do I start business from nothing?,1,qqp_pos_6,train
+How can one increase concentration?,How can I improve my concentration?,1,qqp_pos_6,train
+What's the best near-death experience you've ever had?,Has anyone ever had a near-death experience?,1,qqp_pos_6,train
+How will Indian GDP be affected from banning 500 and 1000 rupees notes?,What will be the implications of banning 500 and 1000 rupees currency notes on Indian economy?,1,qqp_pos_6,train
+What do you think about the Bermuda Triangle?,What are your theories about Bermuda Triangle?,1,qqp_pos_6,train
+Why are dogs considered omnivores?,Are dogs carnivorous animals?,1,qqp_pos_6,train
+Why do I keep getting fleas from my dogs?,How can I keep my dog from getting fleas?,1,qqp_pos_6,train
+Is there a biological reason that people cry when they are emotional?,What is the biological reason for crying?,0,qqp_neg_10,train
+Which is the best programing language for tcs?,Which is the best programming language?,0,qqp_neg_10,train
+Is Kristen Stewart a bad actress?  Why or why not?,Is Jennifer Lawrence a bad actress?,0,qqp_neg_10,train
+I wish to simulate a fake location for an app running on my iOS device. How do you fake a GPS location for iOS without jailbreaking as a non-coder?,How can I fake my iPhone location without jailbreaking?,0,qqp_neg_10,train
+What are 5 facts about the earth's crust?,How does the Earth's core affect its crust?,0,qqp_neg_10,train
+What is the difference between deism and agnosticism?,What is the difference between a hobby and a habit?,0,qqp_neg_10,train
+What are some of the best movie posters you have come across?,What are the best & iconic movie posters?,0,qqp_neg_10,train
+What is the VTU 1st sem exam time table of 2016 (Dec)?,How do I frame my time table for 4 months to crack Gate 2016?,0,qqp_neg_10,train
+"How do I see ""sent invitations"" on Linkedin if I don't have any more pending invitations?","How can you personalize a LinkedIn invitation? I think I just sent a colleague an invitation on LinkedIn, but did not get a chance to personalize it!",0,qqp_neg_10,train
+Can we do an M.Phil in India after doing Masters in UK (MA in Psychology)?,I'm a masters student interested to work in Humanitarian sector. What are the skills required? I'm a medical doctor doing my masters in UK,0,qqp_neg_10,train
+Why do some Japanese guys try to look feminine? Don't the girls find it gross?,Why have most of the guys in India become so desperate? Don't they know that girls don't always look for relationships? Would it hurt guys to become our friend first?,0,qqp_neg_10,train
+Why do male porn stars masturbate to ejaculate?,Is it OK for a husband and wife to masturbate together? Is it considered cheating if your partner is masturbating without your consent?,0,qqp_neg_10,train
+What universities does Powell Industries recruit new grads from? What majors are they looking for?,What universities does Chart Industries recruit new grads from? What majors are they looking for?,0,qqp_neg_10,train
+Harvard College Courses: What is general shopping advice for Turkish classes?,Harvard College Courses: What is general shopping advice for Tamil classes?,0,qqp_neg_10,train
+How much CGPA I require to get an admission for MTech CSE at IIT Madras?,Can I get a job in a consulting firm after Mtech in CSE from IIT?,0,qqp_neg_10,train
+What are the five most popular sugar daddy websites?,What is it like to date a cougar or a sugar daddy?,0,qqp_neg_10,train
+What are some examples of deuteromycota and how are they formed?,Could all bitcoin mining be done by a single Raspberry Pi?,0,qqp_neg_10,train
+What universities does Sigma Designs recruit new grads from? What majors are they looking for?,What universities does Sigma-Aldrich recruit new grads from? What majors are they looking for?,0,qqp_neg_10,train
+How do I send message from one Android phone to another Android phone through bluetooth?,How do I transfer my contacts from one Android phone to another Android phone?,0,qqp_neg_10,train
+Why does ISRO not use friction stir welding technology?,Should a guy re-evaluate his current relationship and feelings if he's worried about temptation hanging out with a girl that he was friends with?,0,qqp_neg_10,train
+What are the best YouTube channels to learn medicine?,What are some of the best YouTube channels for learning Git?,0,qqp_neg_8,calibration
+How many marks should I score for AIIMS rank 151?,What minimum marks should I score to get among top 50 in AIIMS?,0,qqp_neg_8,calibration
+What is CPAGrip.com?,What is bestmytest.com?,0,qqp_neg_8,calibration
+When travelling to a new region is it better to immerse yourself in 1–2 cities or to see as many cities as you can cram in?,What are the ways to explore world without spending more money?,0,qqp_neg_8,calibration
+What would be the estimated cost of repairing the cracked screen of iphone 6?,What is the price I have to pay for repairing a broken iPhone 6 screen? How can it be done?,0,qqp_neg_8,calibration
+How do most people die?,How do people die?,0,qqp_neg_8,calibration
+What will happen if I cancel TQWL tickets before the charting is done?,Can we cancel a 'Tatkal waiting list' ticket?,0,qqp_neg_8,calibration
+Why aren't there more apps like Word Lens?,What does Word Lens use for OCR?,0,qqp_neg_8,calibration
+What are the most interesting products and innovations that McDonald's is coming out with in 2016?,What are the most interesting products and innovations that Ball is coming out with in 2016?,0,qqp_neg_8,calibration
+What do you do if you had a bad dream?,How do you not get bad dreams?,0,qqp_neg_8,calibration
+Why do Slavs squat?,Do squats work for men?,0,qqp_neg_8,calibration
+Did Swami Vivekananda ever eat non-veg or egg during his journey around the world?,Why don't most of the Hindus eat non-veg?,0,qqp_neg_8,calibration
+My ex-girlfriend is suffering from malaria. I have a deep urge of visiting her but I have my placements on. I have no idea how to be with her. What should I do?,"Should I be worried that my girlfriend texts her ex-boyfriend till 4 a.m., and if so, why?",0,qqp_neg_8,calibration
+Were there any slave with the name Reddice?,"In Ancient Rome, slaves were branded. What happened with the brand mark if they were subsequently liberated?",0,qqp_neg_8,calibration
+How do I get over a friend with whom I haven't talked in 3 years but still miss him?,How do I get over someone I loved now that we broke up last year and I still miss her?,0,qqp_neg_8,calibration
+How do I love my body as a guy?,"How can I make my whole body more fair, if I am a wheatish Indian guy?",0,qqp_neg_8,calibration
+"In an operating room, when two surgeons of equal experience disagree on a surgical procedure, how is the tie broken?",Doctors: How do surgeons hold out on surgeries more than 6 hours long? Do they rest during the operation?,0,qqp_neg_8,calibration
+How far would you go for love? Should I wait for the one I love ir move on?,"As a thirteen year old, what is the best thing I can do for my health?",0,qqp_neg_8,calibration
+Why are most clothes made of polyester now instead of cotton?,How are cotton clothes made?,0,qqp_neg_8,calibration
+What is in bone marrow?,What does bone marrow taste like?,0,qqp_neg_8,calibration
+What is the transformers retrieves entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the transformers retrieves entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_27,train
+Is the travel allowance limit 4.0 numeric_value under TN-FIN-TRAVEL-03?,Is the travel allowance limit 8.0 numeric_value under TN-FIN-TRAVEL-03?,0,tn-fin-travel-03_num_neg_3,train
+Should I use Vicks Vapor Rub for a stuffy nose?,How do you apply Vicks Vapor rub to treat a stuffy nose?,1,qqp_pos_8,test
+What are some good places to learn mountaineering in India?,What are some good mountaineering institutes for a beginner level mountaineering course?,1,qqp_pos_8,test
+What are the top 10 books one should read in his or her early 20s?,What books are worth reading in early 20s?,1,qqp_pos_8,test
+Why is Saltwater Taffy candy imported in Greece?,Why is Saltwater taffy candy imported in China?,1,qqp_pos_8,test
+Which book should I start with for the GATE preparation?,What book do I start with for GATE preparation?,1,qqp_pos_8,test
+What is similar to 4Shared?,What is similar to 4shared but better?,1,qqp_pos_8,test
+What is it like being a firefighter?,What's it like to be a firefighter?,1,qqp_pos_8,test
+How we can travel faster than light?,Is it possible to travel faster than light?,1,qqp_pos_8,test
+How I start prepare for UGC net English literature latest syllabus?,How do I prepare for Net JRF in English literature?,1,qqp_pos_8,test
+What can I eat every day to be more healthy?,Is it healthy to eat a whole avocado every day?,1,qqp_pos_8,test
+When is it too late to learn the piano?,I'm almost 40. Is it too late for me to learn piano?,1,qqp_pos_8,test
+What are the life lessons that Batman teaches us?,What are the life lessons you can learn from the dark knight?,1,qqp_pos_8,test
+What are your views on Modi governments decision to demonetize 500 and 1000 rupee notes? How will this affect economy?,What are your views on ban of 500 and 1000 rupee notes in India?,1,qqp_pos_8,test
+Daniel Ek: When an we expect Spotify in India?,Daniel Ek: Are there any future plans of releasing Spotify in India?,1,qqp_pos_8,test
+What are the minimum requirements to enter MIT?,How can I join MIT?,1,qqp_pos_8,test
+How did you first come across porn?,How were you first introduced to porn?,1,qqp_pos_8,test
+What would Hillary Clinton do now that the election is over?,What will Hillary Clinton do now?,1,qqp_pos_8,test
+How do you stop a criminal's attempt to kidnap you so you escape unharmed?,How do you stop a criminal's attempt to kidnap you and escape unharmed?,1,qqp_pos_8,test
+How do I sell on Amazon?,How do I start selling on Amazon?,1,qqp_pos_8,test
+Israel vs Iran: who would win?,"If Israel and Iran went to war, who would win?",1,qqp_pos_8,test
+Why can flash run so fast?,The Flash (DC character): How fast can the Flash run a mile?,0,qqp_neg_7,test
+How TQWL is different from CKWL (Tatkal waiting list)?,I have made a railway reservation but got it on the Tatkal waiting list. Will I get a refund if I cancel it?,0,qqp_neg_7,test
+"What is the best way to invest $500 legally so that I can get tangible profits over a relatively short period of time, say 6 months?",How can I best invest ₹5000 over the next 6 months?,0,qqp_neg_7,test
+"Where does the water from the Great Lakes come from, and how does these lakes wildlife compare to Lake Prespa?","Where does the water from the Great Lakes come from, and how does these lakes wildlife compare to Lake Como?",0,qqp_neg_7,test
+How can I open DMart store in India? Is there any franchise for that?,How do I get reliance digital store franchise?,0,qqp_neg_7,test
+Do porn stars watch porn?,How can I book Ronda Rousey to star in an adult movie?,0,qqp_neg_7,test
+"If I jump rope for five minutes, how many calories will I use?",What's the best way to jump rope?,0,qqp_neg_7,test
+How scary is it to drive on the road to Hana given all of the turns?,Do I need a four-wheel-drive car to drive all the way on the Road to Hana?,0,qqp_neg_7,test
+How many Champions are there in League of Legends?,Who is the best LoL (League of Legends) champion?,0,qqp_neg_7,test
+Does cognition affect perception?,Does cognitive strain affect digestion?,0,qqp_neg_7,test
+"There are 8 balls. 7 of them weigh the same. 1 of them has a different weight, (you don't know if it's heavier or lighter). How do you find the odd ball with 2 weighs?","How many 4 digit numbers can be formed by using 0, 1, 2, 3, 4, 5, 6, and 7? How many of them are between 4000 and 6000?",0,qqp_neg_7,test
+How can I find job in Japan?,How can I find an IT job in Japan?,0,qqp_neg_7,test
+"What are some examples of sentences using the word ""hysteria""?",What is the best home wireless network setup and expected speeds?,0,qqp_neg_7,test
+Is drinking 4 liters of water each day unhealthy?,How many liters of water should I drink if I run 5kms daily?,0,qqp_neg_7,test
+How do you get a book published?,What are the good ways to write and publish a book?,0,qqp_neg_7,test
+What is the temperament of a Bullmastiff/Husky mix?,What is the temperament of a Corgi-Husky mix?,0,qqp_neg_7,test
+Is knee pain in a 20 year old girl normal?,Is it normal for a 14 year old girl to be spitting up blood?,0,qqp_neg_7,test
+"What is the difference between bay, gulf and straits?",What exactly is the difference between a sea and a bay?,0,qqp_neg_7,test
+What is the best material for understanding algorithmic analysis by a newbie?,What math does a complete newbie need to understand algorithms for computer programming? What books on algorithms are suitable for a complete beginner?,0,qqp_neg_7,test
+"Trump supporters, how do you feel about the way he's walking back his promises?",Do Trump supporters now expect the president to live up to his promises he so forcefully sold them on?,0,qqp_neg_7,test
+How do I utilize free time to avoid depression?,Can a person graduating from IIMs like LIK and even the new IIMs like Ranchi and Trichy ever catch up to the graduates from ABC and get a similar package?,0,qqp_neg_6,train
+What are the best quotes/lessons of the Assassin's Creed series?,Which assassin has the best robes in Assassin's Creed?,0,qqp_neg_6,train
+"What would happen if you cover one of your eyes with an eye patch for one year, then take the patch off?",What happens if eye medicine enters the eye?,0,qqp_neg_6,train
+What's the best way to start learning robotics?,What is the best way to start robotics? Which is the best development board that I can start working on it?,0,qqp_neg_6,train
+What is the most creative college admissions essay you've read?,Has any college admission officer cried in public while reading an applicant's essay?,0,qqp_neg_6,train
+What is a profitable way to trade binary options?,What is binary options trading?,0,qqp_neg_6,train
+What are the disadvantages of listing a company in NSE?,What are the benefits of listing a company in NSE?,0,qqp_neg_6,train
+Who was the wife of Lord Krishna?,Who is the father of lord Krishna?,0,qqp_neg_6,train
+What is the work of an executive recruiter like?,What is it like to work with an executive recruiter?,0,qqp_neg_6,train
+How do I find a startup accelerator?,How do startup accelerators give you the funding?,0,qqp_neg_6,train
+How headphones work as an Antenna to play FM radio channels on Mobile phones? Why mobile companies doesn't install the same inbuilt Antenna on phones to be able to play FM without the headphones?,Why don't phones have a built-in FM antenna?,0,qqp_neg_6,train
+"Do inkjet printers use color ink when printing black and white documents? If so, why?","If CMYK printers create black by using colored ink and only complementing with black ink, why do shops charge more for color prints?",0,qqp_neg_6,train
+Are there People who are willing to give free lectures or conduct free workshop in India colleges?,"Almost two weeks in on Prozac, why do I still feel antisocial and still don't want to go to events? Why does my social behavior and mood change daily?",0,qqp_neg_6,train
+How many derivatives of an object's position with respect to time have to be continuous?,When does drawing become fun?,0,qqp_neg_6,train
+"If atheism is the lack of belief in gods, what is the term for the belief that there is no god?","Is atheism the lack of belief in gods, or a claim that god does not exist?",0,qqp_neg_6,train
+Which psychological need does 'collecting' fulfill?,Why do people collect things?,0,qqp_neg_6,train
+What is it like to be Jack Dorsey?,What is Jack Dorsey like?,0,qqp_neg_6,train
+Why are women who are on their periods are regarded as 'unclean' such that they are prevented in taking an actived part in rituals (Hinduism)?,"Why is it always expected that a woman should take care of housework, children and cooking (especially in Indian culture)? Are these activities the responsibility of women alone? Why do men not share equally in such work?",0,qqp_neg_6,train
+How can I check wifi history and access it through android phones?,I cannot open Quora through my WiFi router. Why can I only access it through a mobile network?,0,qqp_neg_6,train
+What are the best career growth technologies for automation engineers apart from automation tools?,Himalayan or Duke KTM 200 for touring?,0,qqp_neg_6,train
+How does the contributed technical entitlement work at Kaveri Tech Solutions?,Can employees claim contributed technical under policy TN-HR-DATA?,1,tn-hr-data_pos_35_b,test
+How do we avoid whey in Yogurt?,Is bad breath a sign of a strong stomach?,0,qqp_neg_11,test
+Why does massaging one's temples soothe a migraine or headache?,What are the causes and most effective ways to treat or cure migraine headaches?,0,qqp_neg_11,test
+Are there any differences between however and nevertheless?,What's the difference between between and among?,0,qqp_neg_11,test
+How do I find the zeros of the polynomial function [math]f(x)=\dfrac{1}{2}x^{3}-3x[/math]?,How would you find the zero of the function for [math]y=\frac{4x^2 - 36x}{ x-9}[/math]?,0,qqp_neg_11,test
+"Im in love with my bisexual best friend who is also a guy and has a girlfriend, and I want to tell him. How do I move on?","I'm a girl and I'm in love my best friend (who is also a girl), what should I do?",0,qqp_neg_11,test
+"What is a boy/girl called when he/she is 1-6 years old, 6-11years old, 11-14 years old, and 14-18 years old?",I am an 18 years old boy and I love a girl who's 14 years old. We both live Tamil Nadu. Is this a time to propose to her?,0,qqp_neg_11,test
+What are the top assessment companies in India?,Which are the top firms in Skills assessment industry in India and Globally?,0,qqp_neg_11,test
+Are Canada Geese really Canadian?,What do Canadians call Canada?,0,qqp_neg_11,test
+How racist is too racist?,How racist are you?,0,qqp_neg_11,test
+What are the sensors available in Acer Liquid Z630S Android Smart phone by using CPU-Z App?,Which useful Android phone apps are not available in the Google Play store?,0,qqp_neg_11,test
+Do Mexican girls like black guys?,Do girls like black guys with no beard?,0,qqp_neg_11,test
+Why do they name bastards Snow?,"If Jon Snow is not Ned's bastard, why does Lady Catelyn hate him so much?",0,qqp_neg_11,test
+What does @ mean as an emoticon?,Emoticons: What does “:/” mean?,0,qqp_neg_11,test
+Can you debeak cockerels at 8 months old?,How much and with what should I feed my 3 months old raven?,0,qqp_neg_11,test
+Why are my bestfriend still ignoring me?,What should I do when my bestfriend is ignoring me?,0,qqp_neg_11,test
+What is the best university in Germany for an MS?,Which are the best universities in Germany for getting a degree in mechanical engineering?,0,qqp_neg_11,test
+Who is more electable in a general Presidential election: Donald Trump or Ted Cruz?,Who is more delusional: Donald Trump or Ted Cruz?,0,qqp_neg_11,test
+Have you lived in a tiny house?,Would you live in a tiny house?,0,qqp_neg_11,test
+How do I edit my devices on my Google play account?,How do I add a second device to a Google Play account?,0,qqp_neg_11,test
+Which car has good build quality in india?,Is Volkswagen a good reliable car?,0,qqp_neg_11,test
+What is the company policy regarding employee relocation benefits and packing assistance?,Could you explain the employee guidelines for employee relocation benefits and packing assistance under TN-FIN-RELOC-06?,1,tn-fin-reloc-06_pos_0,train
+What is the html css entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the html css entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_6,train
+What is the core business entitlement in Chennai Tamil Nadu under TN-HR-WFH-02?,What is the core business entitlement in London United Kingdom under TN-HR-WFH-02?,0,tn-hr-wfh-02_jurisdiction_neg_1,train
+Do full-time permanent employees qualify for data under TN-HR-DATA?,Do external third-party contractors qualify for data under TN-HR-DATA?,0,tn-hr-data_category_neg_40,train
+"What makes a programmer ""good?""",What makes a good programmer great?,1,qqp_pos_9,train
+What are scraping techniques?,What are some good free web scrapers / scraping techniques?,1,qqp_pos_9,train
+Why are police lights red and blue?,Why are police lights red and/or blue?,1,qqp_pos_9,train
+Will baking soda help pass a urine test?,How does baking soda help you pass a drug test?,1,qqp_pos_9,train
+"How do you feel about the new MacBook Pro, late 2016?",Should I get the new Macbook Pro?,1,qqp_pos_9,train
+How do I post a question that was marked as needing improvement?,"Why was my question marked as ""needs improvement?""",1,qqp_pos_9,train
+What is the best way to learn algebra by yourself?,How do you learn algebra 1 fast?,1,qqp_pos_9,train
+How do I prepare for software interviews?,What are the best ways to prepare for software interviews?,1,qqp_pos_9,train
+Where and how do the crop circles get generated?,What are crop circles?,1,qqp_pos_9,train
+What is Zika virus and how is it transmitted?,How is Zika virus spread?,1,qqp_pos_9,train
+How should I study,What are some tricks to study effectively?,1,qqp_pos_9,train
+Does Rahul Gandhi have any chance to become next PM of India after Modi?,Does Rahul Gandhi have chances to become next Pm of India after Modi?,1,qqp_pos_9,train
+Did Mahabharata really happen?,Did Mahabharata really happen or only an allegory according to M.K.Gandhi?,1,qqp_pos_9,train
+Is it healthy to eat egg whites every day?,Is it healthy to eat one chicken every day?,1,qqp_pos_9,train
+Is civil war likely after the US presidential election?,Is the US at risk of some type of uprising after the election?,1,qqp_pos_9,train
+Can climate change be reversed?,Can the global climate change be reversed or halted?,1,qqp_pos_9,train
+What is the difference between a comet and an asteroid?,What is the difference between asteroids and comets?,1,qqp_pos_9,train
+What are the best places to recommend foreigners to visit in Nepal?,What are the best places to visit in Nepal?,1,qqp_pos_9,train
+What are the major differences between Chinese culture and western cultures?,What is the difference between Chinese and western culture?,1,qqp_pos_9,train
+What is the best place for sex?,What is the best place to have sex from?,1,qqp_pos_9,train
+What is the data visualization entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the data visualization entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_6,validation
+Do full-time permanent employees qualify for melinia pitch under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for melinia pitch under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_39,validation
+How does the providing centralized entitlement work at Kaveri Tech Solutions?,Can employees claim providing centralized under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_15_b,calibration
+What is the hybrid working entitlement in Chennai Tamil Nadu under TN-HR-WFH-02?,What is the hybrid working entitlement in London United Kingdom under TN-HR-WFH-02?,0,tn-hr-wfh-02_jurisdiction_neg_2,train
+What is the local taxi entitlement in Chennai Tamil Nadu under TN-FIN-TRAVEL-03?,What is the local taxi entitlement in London United Kingdom under TN-FIN-TRAVEL-03?,0,tn-fin-travel-03_jurisdiction_neg_2,train
+Do full-time permanent employees qualify for apis tools under TN-HR-DATA?,Do external third-party contractors qualify for apis tools under TN-HR-DATA?,0,tn-hr-data_category_neg_9,train
+How does the software systems entitlement work at Kaveri Tech Solutions?,Can employees claim software systems under policy TN-HR-DATA?,1,tn-hr-data_pos_37_b,validation
+What is web application?,What is the web application framework?,0,qqp_neg_0,calibration
+When do you use シ instead of し?,"When do you use ""&"" instead of ""and""?",0,qqp_neg_0,calibration
+"What are the laws to change your status from a student visa to a green card in the US, how do they compare to the immigration laws in Canada?",What are the laws to change your status from a student visa to a green card in the US? How do they compare to the immigration laws in Japan?,0,qqp_neg_0,calibration
+Should I buy tiago?,What keeps childern active and far from phone and video games?,0,qqp_neg_0,calibration
+What is the story of Kohinoor (Koh-i-Noor) Diamond?,What would happen if the Indian government stole the Kohinoor (Koh-i-Noor) diamond back?,0,qqp_neg_0,calibration
+What are some tips on making it through the job interview process at Medicines?,What are some tips on making it through the job interview process at Foundation Medicine?,0,qqp_neg_0,calibration
+What does it mean that every time I look at the clock the numbers are the same?,How many times a day do a clock’s hands overlap?,0,qqp_neg_0,calibration
+How much is 30 kV in HP?,Where can I find a conversion chart for CC to horsepower?,0,qqp_neg_0,calibration
+What is the step by step guide to invest in share market in india?,What is the step by step guide to invest in share market?,0,qqp_neg_0,calibration
+What is best way to make money online?,What is best way to ask for money online?,0,qqp_neg_0,calibration
+"Which one dissolve in water quikly sugar, salt, methane and carbon di oxide?",Which fish would survive in salt water?,0,qqp_neg_0,calibration
+What are the questions should not ask on Quora?,Which question should I ask on Quora?,0,qqp_neg_0,calibration
+How can I increase the speed of my internet connection while using a VPN?,How can Internet speed be increased by hacking through DNS?,0,qqp_neg_0,calibration
+Method to find separation of slits using fresnel biprism?,What are some of the things technicians can tell about the durability and reliability of Laptops and its components?,0,qqp_neg_0,calibration
+Does society place too much importance on sports?,How do sports contribute to the society?,0,qqp_neg_0,calibration
+Which is the best digital marketing institution in banglore?,Which is the best digital marketing institute in Pune?,0,qqp_neg_0,calibration
+Motorola (company): Can I hack my Charter Motorolla DCX3400?,How do I hack Motorola DCX3400 for free internet?,0,qqp_neg_0,calibration
+Why am I mentally very lonely? How can I solve it?,"Find the remainder when [math]23^{24}[/math] is divided by 24,23?",0,qqp_neg_0,calibration
+Why do girls want to be friends with the guy they reject?,How do guys feel after rejecting a girl?,0,qqp_neg_0,calibration
+What's causing someone to be jealous?,What can I do to avoid being jealous of someone?,0,qqp_neg_0,calibration
+How does the maternity leave entitlement work at Kaveri Tech Solutions?,Can employees claim maternity leave under policy TN-HR-LEAVE-01?,1,tn-hr-leave-01_pos_3_b,train
+Do full-time permanent employees qualify for developed student under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for developed student under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_19,train
+How does the databases mysql entitlement work at Kaveri Tech Solutions?,Can employees claim databases mysql under policy TN-HR-DATA?,1,tn-hr-data_pos_7_b,calibration
+How does the trained calibrated entitlement work at Kaveri Tech Solutions?,Can employees claim trained calibrated under policy TN-HR-DATA?,1,tn-hr-data_pos_18_b,validation
+What is the company policy regarding policy on implemented semantic?,Could you explain the employee guidelines for policy on implemented semantic under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_16,train
+"Is Donald Trump taking cocaine, as Howard Dean suggests?",Are there any strong indications that Donald Trump does cocaine?,1,qqp_pos_7,validation
+What is the different between Chinese wedding ceremony and western wedding ceremony?,What is the difference between Chinese and Western style wedding?,1,qqp_pos_7,validation
+How do I pass a drug test for methamphetamine?,Can hair dye help pass a hair follicle drug test for daily meth smokers?,1,qqp_pos_7,validation
+What should someone do to overcome anxiety?,What should I do to avoid depression and anxiety?,1,qqp_pos_7,validation
+Why should one hate Shahrukh Khan?,Why do people hate Shahrukh Khan and why do people feel that he is not an Indian?,1,qqp_pos_7,validation
+What are the best self-help books you've ever read?,What are the top self help books I should read?,1,qqp_pos_7,validation
+What are movies with incest scenes?,Are there any good incest movie?,1,qqp_pos_7,validation
+How do I keep motivation to learn a language?,How do you keep motivated when you learn a new language?,1,qqp_pos_7,validation
+What is a good song to lyric prank your best friend?,What are some good lyric prank songs to send your best friends?,1,qqp_pos_7,validation
+How can I see the Comedy Nights with Kapil live show?,What is the way to watch Comedy Nights with Kapil live on the sets?,1,qqp_pos_7,validation
+How can I get entry in MIT?,What are the requirements for selection into MIT?,1,qqp_pos_7,validation
+How do I maintain my peace of mind?,How can I maintain my peace of mind?,1,qqp_pos_7,validation
+How could start with open source development?,How should I start contributing to open source projects?,1,qqp_pos_7,validation
+Do cricket players really drink tea on a tea break?,Do cricketers actually drink tea during tea break?,1,qqp_pos_7,validation
+"How much does your DNA change over time? If I were to clone myself 70 years from now, will the clone have the same hair color?",How much can a person's DNA change from birth to death in a life span of approximately 70 years?,1,qqp_pos_7,validation
+What's your bucket list?,What is your bucket list?,1,qqp_pos_7,validation
+Do you regret your divorce?,Have you ever regretted your divorce?,1,qqp_pos_7,validation
+Which one is better among KMC Manipal and KMC Mangalore?,What is the brief comparison of KMC in Manipal and Mangalore?,1,qqp_pos_7,validation
+Is Evernote useful?,What is Evernote used for?,1,qqp_pos_7,validation
+Does a fetus breathe when it's inside a womb?,How does a fetus exhale in the womb?,1,qqp_pos_7,validation
+Do full-time permanent employees qualify for studentdrive react under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for studentdrive react under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_13,validation
+How do you write a song?,How do I write a song?,1,qqp_pos_10,train
+How can I become a true computer science engineer?,How do I become a good computer science engineer?,1,qqp_pos_10,train
+What is your favourite anime character and why?,What is your favorite anime character? And why?,1,qqp_pos_10,train
+Where do I find 3ds emulator for android?,Is there a working Nintendo 3DS emulator for PC?,1,qqp_pos_10,train
+What can you do in lucid dreams?,How was your experience of Lucid dreaming?,1,qqp_pos_10,train
+How many Mechanical Engineers graduate from India per year?,How many mechanical engineers graduate per year in India?,1,qqp_pos_10,train
+How imminent is world war III?,Are we heading toward World War 3?,1,qqp_pos_10,train
+What are the best daily life hacks one can use to make his life easy?,What are the hacks in daily life?,1,qqp_pos_10,train
+If time started because of the big bang happening then how could the big bang start because there was no time for the big bang to start?,How did the Big Bang happen when there wasn't any time for it to happen in?,1,qqp_pos_10,train
+How do I start a successful private equity firm?,What do you need to start your own private equity firm?,1,qqp_pos_10,train
+"What is an interesting fact that you know and I don't, but shouldn't?",What is the most interesting fact that most people don't know about?,1,qqp_pos_10,train
+How can I start civil service exam preparation from scratch?,When should I start preparing for the civil service exam?,1,qqp_pos_10,train
+How will Trump's presidency affect Indian students who are planning to do a PhD in the US?,How would Trump presidency affect Indian students in the US?,1,qqp_pos_10,train
+What could be Narendra Modi's next move after demonetization?,What is next step after demonetization?,1,qqp_pos_10,train
+What can be the medium budget to visit best places in Kerala for three members (2-3 days)?,What are the best places to visit in Kerala for college students?,1,qqp_pos_10,train
+What is the difference in pleasure between masturbation and sex?,What is the difference between sex and masturbation when it comes to pleasure?,1,qqp_pos_10,train
+What is the best lesson in life?,What is the most important lesson you have learned from life?,1,qqp_pos_10,train
+"If you have me, you want to share me. If you share me, you haven't got me. What am I?","If you have me, you want to share me. If you share me, you don't get me. What am I?",1,qqp_pos_10,train
+How can I earn money from YouTube?,How do I make money through YouTube?,1,qqp_pos_10,train
+How can I hack someones whatsapp account?,How can I hack another WhatsApp account?,1,qqp_pos_10,train
+How does the while ensuring entitlement work at Kaveri Tech Solutions?,Can employees claim while ensuring under policy TN-HR-DATA?,1,tn-hr-data_pos_14_b,train
+What is the company policy regarding policy on providing centralized?,Could you explain the employee guidelines for policy on providing centralized under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_15,train
+Do full-time permanent employees qualify for manage budgeting under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for manage budgeting under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_30,validation
+Is a pinkish discharge normal in early pregnancy? What causes it?,What did nicholas piramal do with 17500 cr?,0,qqp_neg_12,train
+What is the condition of tourism in Pakistan?,Preferable PG courses for BE (EEE) student in Tamil Nadu?,0,qqp_neg_12,train
+How do scientists work?,Where do scientists work?,0,qqp_neg_12,train
+How many sponsored candidates are shortlisted for CMC vellore?,"What is the office culture and woking at Patanjali office, haridwar?",0,qqp_neg_12,train
+A title for my continuation to The Gift of the Magi?,How do I start my continuation for the Gift of the Magi?,0,qqp_neg_12,train
+What are the best ways to properly finger yourself?,What would be the best way of keeping yourself amused in a prison?,0,qqp_neg_12,train
+"What are the signs that a guy has feelings for you or has a crush on you, but doesn't want to show it, so he hides it?",The guy I'm dating never texts me and I feel like he doesn't care about me but when I see him he shows me he likes me and wants me. Why do I feel this way?,0,qqp_neg_12,train
+I argued with my gf that she made friends with the person that hit on her. She said I'm a control freak and she wants her freedom. What should I do?,I'm a girl in middle school. My best friends are all girls. I've found out that I'm bisexual. How do I tell my best friend who's a girl without her freaking out and it changing our whole friendship?,0,qqp_neg_12,train
+What is the different between offshore and onshore funds?,What is the difference between offshore and onshore?,0,qqp_neg_12,train
+Why do dreams look so real?,"If you dream about some kind of harm, will there be injuries in real life?",0,qqp_neg_12,train
+Do full-time permanent employees qualify for campuscollab react under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for campuscollab react under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_18,train
+Do full-time permanent employees qualify for maternity leave under TN-HR-LEAVE-01?,Do external third-party contractors qualify for maternity leave under TN-HR-LEAVE-01?,0,tn-hr-leave-01_category_neg_3,calibration
+What is the cleaned analyzed entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the cleaned analyzed entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_21,test
+How do I stop being addicted to porn?,How can I stop watching porn?,1,qqp_pos_11,train
+How can one get a fuller face?,How do I do to get fuller face?,1,qqp_pos_11,train
+What is the meaning of life? Whats our purpose on Earth?,What do you feel is the purpose of life?,1,qqp_pos_11,train
+What are some movies that everyone needs to watch at least once in life?,What movies would you recommend everyone to watch?,1,qqp_pos_11,train
+Is it too late for me at the age of 25 thinking to start a career in photography?,I want to start my career as a photographer at age of 25. Is it too late?,1,qqp_pos_11,train
+Is there any other website similar to Quora?,Are there any website like Quora?,1,qqp_pos_11,train
+How do I can stop hairfall?,How can I stop hairfall?,1,qqp_pos_11,train
+"In your opinion, what is the best classical song of all time?",What's the best classical music piece of all time?,1,qqp_pos_11,train
+How can eating prunes help during a constipation?,Does eating prunes help with constipation?,1,qqp_pos_11,train
+Why is Barack Obama so important for the world?,Why is Barack Obama so important to the world?,1,qqp_pos_11,train
+Do Trump voters care that he has reneged all his campaign promises?,How will Trump supporters react once they realize he can't or won't keep his campaign promises?,1,qqp_pos_11,train
+Can World War 3 ever take place?,Is World War 3 more imminent than expected?,1,qqp_pos_11,train
+What is the reason Pakistan supports terrorism?,Has Pakistan become a safe haven for global terrorism?,1,qqp_pos_11,train
+"Can I learn while sleeping? If so, how?",How can I efficiently learn while sleeping?,1,qqp_pos_11,train
+How is time travel possible?,Do you think time travel is possible?,1,qqp_pos_11,train
+What’s the best time to have sex?,When will the best time for having sex?,1,qqp_pos_11,train
+What's the funniest highbrow joke you've ever heard?,What are the funniest jokes / stories you ever heard?,1,qqp_pos_11,train
+What is your take on Urjit Patel as the new RBI governor?,Is Urjit Patel is right person for RBI Governor?,1,qqp_pos_11,train
+Can we create free energy?,How do we make free energy?,1,qqp_pos_11,train
+Do you have any psychic abilities?,Do you have psychic power?,1,qqp_pos_11,train
+Is the class venkatalakshmi limit 12.0 numeric_value under TN-OPERATIONS-SDE?,Is the class venkatalakshmi limit 24.0 numeric_value under TN-OPERATIONS-SDE?,0,tn-operations-sde_num_neg_37,validation
+What is the company policy regarding policy on developed inventory?,Could you explain the employee guidelines for policy on developed inventory under TN-HR-DATA?,1,tn-hr-data_pos_23,test
+How does the studentdrive react entitlement work at Kaveri Tech Solutions?,Can employees claim studentdrive react under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_13_b,train
+Why do I always get depressed?,Why do I always get depressed in the evening?,0,qqp_neg_2,validation
+Why do Swiss despise Asians?,Why do technical employees despise sales people so much?,0,qqp_neg_2,validation
+How can I make money through the Internet?,"What are some different ways to make money online, excluding selling things?",0,qqp_neg_2,validation
+"National Institute of Technology, Kurukshetra: How is the social life at NITK, Surathkal?","National Institute of Technology Karnataka (NITK) , Surathkal: To the graduating batch: What lessons would you want to give to your juniors before you leave?",0,qqp_neg_2,validation
+Where can I find a European family office database?,Where do I find a U.S. family office database?,0,qqp_neg_2,validation
+When will the BJP government strip all the Muslims and the Christians of the Indian citizenship and put them on boats like the Rohingya's of Burma?,"Why India does not apply the ""Burma-Rohingya model"" to deport illegal Bangladeshis?",0,qqp_neg_2,validation
+What is your review of The Next Warrior: Proving Grounds - Part 9?,What is your review of The Next Warrior: Proving Grounds - Part 5?,0,qqp_neg_2,validation
+What are the types of immunity?,What are the different types of immunity in our body?,0,qqp_neg_2,validation
+Is it normal to have a dark ring around the iris of my eye?,What causes a dark ring around the iris? How should it be treated?,0,qqp_neg_2,validation
+If I fire a bullet backward from an aircraft going faster than the bullet; will the bullet be going backwards?,"Do bullets travel faster than the speed of sound when shot from a gun? If not, is it possible? If they do, what gun and how much devastation occurs?",0,qqp_neg_2,validation
+"If someone wants to open a commercial FM radio station in any city of India, how much does it cost and what is the procedure?","I want to make a travel commercial/clip video HD , For India and New Zealand. How much will it cost?",0,qqp_neg_2,validation
+What is the best reference book for physics class 11th?,"Which book should I choose for reference for physics and chemistry (class 11, CBSE board)?",0,qqp_neg_2,validation
+At what cost does so much privacy as in Germany come? What else is lost to gain so much privacy?,Are there any people who genuinely enjoy salad with no dressing?,0,qqp_neg_2,validation
+How do I log out of my Gmail account on my friend's phone?,How can I know who logged in to my Gmail account? (by telling his IP address or device name)?,0,qqp_neg_2,validation
+How do I download content from a kickass torrent without registration?,Is Kickass Torrents trustworthy?,0,qqp_neg_2,validation
+What is the right etiquette for wishing a Jehovah Witness happy birthday?,How important is it to be the first person to wish someone a happy birthday?,0,qqp_neg_2,validation
+What is the difference between sincerity and fairness?,What's the difference between honest and sincere?,0,qqp_neg_2,validation
+What is your review of Performance Testing?,What is performance testing?,0,qqp_neg_2,validation
+What are the best ways to learn French?,How do I learn french genders?,0,qqp_neg_2,validation
+How do I prevent breast cancer?,Is breast cancer preventable?,0,qqp_neg_2,validation
+Do full-time permanent employees qualify for organized supported under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for organized supported under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_33,train
+What is the company policy regarding policy on built document?,Could you explain the employee guidelines for policy on built document under TN-HR-DATA?,1,tn-hr-data_pos_26,validation
+How does the foss cit entitlement work at Kaveri Tech Solutions?,Can employees claim foss cit under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_29_b,test
+Can I recover my email if I forgot the password?,What should I do if I forgot my email password?,1,qqp_pos_1,train
+Can we ever store energy produced in lightning?,Is it possible to store the energy of lightning?,1,qqp_pos_1,train
+What are some of the best romantic movies in English?,What is the best romantic movie you have ever seen?,1,qqp_pos_1,train
+Will there really be any war between India and Pakistan over the Uri attack? What will be its effects?,Will there be a nuclear war between India and Pakistan?,1,qqp_pos_1,train
+What is the best book ever made?,What is the most important book you have ever read?,1,qqp_pos_1,train
+How does 3D printing work?,How do 3D printing work?,1,qqp_pos_1,train
+What is a narcissistic personality disorder?,What is narcissistic personality disorder?,1,qqp_pos_1,train
+"What were the major effects of the cambodia earthquake, and how do these effects compare to the Kamchatca earthquakes in 1952?","What were the major effects of the cambodia earthquake, and how do these effects compare to the Valparaiso earthquake in 1822?",1,qqp_pos_1,train
+What's the difference between love and pity?,What is the difference between love and pity?,1,qqp_pos_1,train
+How I can speak English fluently?,How can I learn to speak English fluently?,1,qqp_pos_1,train
+What is Java programming? How To Learn Java Programming Language ?,How do I learn a computer language like java?,1,qqp_pos_1,train
+How can I increase my height after 21 also?,Can height increase after 25?,1,qqp_pos_1,train
+What do you think China food?,How do you think of Chinese food?,1,qqp_pos_1,train
+Who is the richest gambler of all time and how can I reach his level?,Who is the richest gambler of all time and how can I reach his level as a gambler?,1,qqp_pos_1,train
+Which is the best gaming laptop under 60k INR?,Which is the best gaming laptop under Rs 60000?,1,qqp_pos_1,train
+What is purpose of life?,What's the purpose of life? What is life actually about?,1,qqp_pos_1,train
+What causes a nightmare?,What causes nightmares that seem real?,1,qqp_pos_1,train
+Why my question was marked as needing imrovement?,How can I ask a question without getting marked as ‘need to improve’?,1,qqp_pos_1,train
+What are some of the high salary income jobs in the field of biotechnology?,What are some high paying jobs for a fresher with an M.Tech in biotechnology?,1,qqp_pos_1,train
+How helpful is QuickBooks' auto data recovery support phone number to recover your corrupted data files?,What is the quickbooks customer support phone number USA?,1,qqp_pos_1,train
+What is the company policy regarding policy on hosted technical?,Could you explain the employee guidelines for policy on hosted technical under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_34,calibration
+"Does the United States government still blacklist (employment, etc.) some United States citizens because their political views?",How is the average speed of gas molecules determined?,0,qqp_neg_1,train
+"When a girlfriend asks her boyfriend ""Why did you choose me? What makes you want to be with me?"", what should one reply to her?",My girlfriend said that we should end this because she is confused about her feelings for me. I wished her well and disconnected. Should I call her and ask her if she wants to get back together?,0,qqp_neg_1,train
+Nd she is always sad?,Aerodynamically what happens when propellor rotates?,0,qqp_neg_1,train
+How did Darth Vader fought Darth Maul in Star Wars Legends?,Does Quora have a character limit for profile descriptions?,0,qqp_neg_1,train
+Who is israil friend?,Is my boyfriend lying about his true feelings for his friend and is he secretly attracted to her?,0,qqp_neg_1,train
+What is the quickest way to increase Instagram followers?,How can we increase our number of Instagram followers?,0,qqp_neg_1,train
+How GST affects the CAs and tax officers?,Why can't I do my homework?,0,qqp_neg_1,train
+Why do Slavs squat?,Will squats make my legs thicker?,0,qqp_neg_1,train
+What is the stall speed and AOA of an f-14 with wings fully swept back?,"Why did aircraft stop using variable-sweep wings, like those on an F-14?",0,qqp_neg_1,train
+What are some good rap songs to dance to?,What are some of the best rap songs?,0,qqp_neg_1,train
+When can I expect my Cognizant confirmation mail?,When can I expect Cognizant confirmation mail?,0,qqp_neg_1,train
+Is being a good kid and not being a rebel worth it in the long run?,Is being bored good for a kid?,0,qqp_neg_1,train
+What's one thing you would like to do better?,What's one thing you do despite knowing better?,0,qqp_neg_1,train
+Why do some people think Obama will try to take their guns away?,Has there been a gun control initiative to take away guns people already own?,0,qqp_neg_1,train
+I'm a 19-year-old. How can I improve my skills or what should I do to become an entrepreneur in the next few years?,I am a 19 year old guy. How can I become a billionaire in the next 10 years?,0,qqp_neg_1,train
+"What are the stages of breaking up between couple? I mean, what happens after the breaking up emotionally whether its a male or female?","Who is affected more by a breakup, the boy or the girl?",0,qqp_neg_1,train
+How difficult is it get into RSI?,Do you apply for programs like RSI when you're a rising senior?,0,qqp_neg_1,train
+"Can I make 50,000 a month by day trading?","Can I make 30,000 a month by day trading?",0,qqp_neg_1,train
+What is the best travel website in spain?,What is the best travel website?,0,qqp_neg_1,train
+What universities does Rexnord recruit new grads from? What majors are they looking for?,What universities does B&G Foods recruit new grads from? What majors are they looking for?,0,qqp_neg_1,train
+Is the lakshmi life limit 1.0 numeric_value under TN-OPERATIONS-SDE?,Is the lakshmi life limit 2.0 numeric_value under TN-OPERATIONS-SDE?,0,tn-operations-sde_num_neg_8,calibration
+What is the company policy regarding policy on roles responsibilities?,Could you explain the employee guidelines for policy on roles responsibilities under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_28,test
+How does the implemented semantic entitlement work at Kaveri Tech Solutions?,Can employees claim implemented semantic under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_16_b,calibration
+Who are the Rohingya Muslims?,Who are the Rohingya people?,1,qqp_pos_2,train
+"If I do not monetize YouTube videos & upload copyright content, then are there chances that Google may block my account?",How do you upload movies on YouTube and monetize them? Is there any issue of copyright,1,qqp_pos_2,train
+Can excessive amounts of Vitamin C cause me to have a miscarriage?,How can Vitamin C cause a miscarriage?,1,qqp_pos_2,train
+"Why does China block sanctions at the UN against the Jaish-e-Mohammad (JeM) chief, Masood Azhar?",Why does China support Masood Azhar?,1,qqp_pos_2,train
+Does it matter whether humans are selfish or evil?,Does it matter whether humanity is evil or not?,1,qqp_pos_2,train
+Do animals kiss?,Do animals (besides humans) kiss?,1,qqp_pos_2,train
+Does a black hole have mass?,Does a black hole have a finite mass?,1,qqp_pos_2,train
+Which is the best fixed income fund?,What is the best fixed income fund?,1,qqp_pos_2,train
+Why nobody answer my questions in Quora?,Why is no one answering my questions in Quora?,1,qqp_pos_2,train
+"Is Morgan Freeman correct when he says the only way to stop racism, is to stop talking about it?",What are your views about this Morgan Freeman quote about Racism?,1,qqp_pos_2,train
+Why does Red keep the keys in OITNB?,Why does Red keep the keys in season 4 of Orange is the New Black?,1,qqp_pos_2,train
+Why does some people prefer small families.?,Why do some people prefer to live with small family?,1,qqp_pos_2,train
+Which are the best engineering fields?,What is the best field of engineering?,1,qqp_pos_2,train
+What does the Quora website look like to members of Quora moderation?,How does Quora look to a moderator?,1,qqp_pos_2,train
+What mineral holds the highest electrical charge?,What mineral can hold the greatest electrical charge?,1,qqp_pos_2,train
+Does anyone see the relation between Greek gods and Hindu gods?,"What parallelism can we draw between gods of Hindu mythology, Greek mythology, Egyptian mythology, etc.?",1,qqp_pos_2,train
+What is it like to live in Cologne?,"What is it like to live in Köln, Germany?",1,qqp_pos_2,train
+What is the funniest joke you know?,What is the funniest joke of all time?,1,qqp_pos_2,train
+Which is the best earphone with deep bass under 1000?,Which is the Best earphones under Rs 1000?,1,qqp_pos_2,train
+How do I use Twitter as a business source?,How can I use Twitter for business?,1,qqp_pos_2,train
+What is the company policy regarding policy on software systems?,Could you explain the employee guidelines for policy on software systems under TN-HR-DATA?,1,tn-hr-data_pos_37,train
+Do full-time permanent employees qualify for rdevasri gmail under TN-HR-DATA?,Do external third-party contractors qualify for rdevasri gmail under TN-HR-DATA?,0,tn-hr-data_category_neg_0,calibration
+What is the company policy regarding policy on identify equivalent?,Could you explain the employee guidelines for policy on identify equivalent under TN-HR-DATA?,1,tn-hr-data_pos_17,train
+How does the data visualization entitlement work at Kaveri Tech Solutions?,Can employees claim data visualization under policy TN-HR-DATA?,1,tn-hr-data_pos_6_b,validation
+How does the developed student entitlement work at Kaveri Tech Solutions?,Can employees claim developed student under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_19_b,calibration
+What is abstract expressionism in painting?,What are some of the major influences of abstract expressionism?,0,qqp_neg_3,calibration
+Have you ever heard of travel hacking?,Can WhatsApp be hacked?,0,qqp_neg_3,calibration
+How do you obtain an instant ulcer pain relief?,What is better for a low back pain: heat or ice?,0,qqp_neg_3,calibration
+Which is the best fiction novel of 2016?,Which are some of the best fiction novels?,0,qqp_neg_3,calibration
+What are the best associate product manager (APM) programs that someone in their early 20s can join to learn product management and have a rewarding career in the company?,What are the general requirement to become a Product Manager or a Program Manager in a product based software company?,0,qqp_neg_3,calibration
+What does taking advantage of someone mean?,Is it worse to take advantage of someone or be materialistic?,0,qqp_neg_3,calibration
+What are some mind-blowing computer tools that exist that most people don't know about?,What are some mind-blowing technologies that exist that most people don't know about?,0,qqp_neg_3,calibration
+How Google helps in spam ranking adjustment of the search results?,"What is the distribution of traffic between Google organic search results? e.g. #1 vs. #2 in rankings, first page vs. second page",0,qqp_neg_3,calibration
+What was it like to attend Caltech with Jeremy Ehrhardt?,Who are some notable folks who attended Caltech?,0,qqp_neg_3,calibration
+Is USA the most powerful country of the world?,Why is the USA the most powerful country of the world?,0,qqp_neg_3,calibration
+Why did harry become a horcrux?,What is a Horcrux?,0,qqp_neg_3,calibration
+Did Ronald Reagan have a mannerism in his speech?,How did Ronald Reagan react to 9/11?,0,qqp_neg_3,calibration
+Where can I watch gonulcelen with english subtitles?,Where can I watch sarrainodu with subtitles?,0,qqp_neg_3,calibration
+Why do some girls like to stick their their tongues out when taking pictures?,Why do teen girls (and women in general) allow their boyfriends to take naked pictures of them in this day and (digital) age?,0,qqp_neg_3,calibration
+What were the war strategies of the Union and the Confederates during the Civil War?,How could the Confederates have possibly defeated Union forces at Gettysburg during the American Civil War?,0,qqp_neg_3,calibration
+How competitive is the hiring process at Republic Bank?,How competitive is the hiring process at S & T Bank?,0,qqp_neg_3,calibration
+Should the toothbrush be wet or dry before applying the toothpaste?,What is the cheapest toothpaste?,0,qqp_neg_3,calibration
+"Did you find the ending of the novel ""1984"" depressing?","How do Winston and Julia differ in the novel ""1984""? How are they similar?",0,qqp_neg_3,calibration
+Will the recent demonetisation results in higher GDP? If so how much?,How demonetisation could affect the GDP of India in both short run and long run?,0,qqp_neg_3,calibration
+Why is the number for Skype at 1-855-425-3768 always busy?,How could I get Skype to work on an android 4.1.1 phone?,0,qqp_neg_3,calibration
+What is the data entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the data entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_40,train
+What is the full time entitlement in Chennai Tamil Nadu under TN-HR-WFH-02?,What is the full time entitlement in London United Kingdom under TN-HR-WFH-02?,0,tn-hr-wfh-02_jurisdiction_neg_0,train
+What is the company policy regarding policy on developed contributed?,Could you explain the employee guidelines for policy on developed contributed under TN-HR-DATA?,1,tn-hr-data_pos_11,train
+What is the melinia pitch entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the melinia pitch entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_39,train
+Do full-time permanent employees qualify for lakshmi life under TN-HR-DATA?,Do external third-party contractors qualify for lakshmi life under TN-HR-DATA?,0,tn-hr-data_category_neg_10,validation
+Do full-time permanent employees qualify for cgpa semester under TN-HR-DATA?,Do external third-party contractors qualify for cgpa semester under TN-HR-DATA?,0,tn-hr-data_category_neg_38,test
+What is the company policy regarding policy on identifying sales?,Could you explain the employee guidelines for policy on identifying sales under TN-HR-DATA?,1,tn-hr-data_pos_22,train
+What is the class venkatalakshmi entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the class venkatalakshmi entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_39,validation
+Why do people hate twilight saga?,Why do people hate Twilight so much?,1,qqp_pos_12,train
+How can I improve my spoken English ability?,How can I improve my English speaking .?,1,qqp_pos_12,train
+What are the conditions in European refugee camps?,How are the conditions inside European Refugee Camps?,1,qqp_pos_12,train
+Will the Supreme Court's decision of playing the National Anthem before movie screenings affect your patriotism?,What are your views on the supreme court's decision to make playing national anthem mandatory in cinema halls?,1,qqp_pos_12,train
+Is there any way to get rid of gynecomastia?,How can I get rid of man boobs?,1,qqp_pos_12,train
+Are there any scientific reasons behind Hindu temples?,What is the scientific reason behind visiting temples?,1,qqp_pos_12,train
+How do I develop my presence of mind?,How can I increase my presence of mind?,1,qqp_pos_12,train
+What are the good websites to learn C programming for begineer?,How can we learn c programming?,1,qqp_pos_12,train
+How do I find love in life?,How do I find the love of my life?,1,qqp_pos_12,train
+How do I make money with YouTube?,How do I make money through YouTube?,1,qqp_pos_12,train
+What is the company policy regarding policy on full time?,Could you explain the employee guidelines for policy on full time under TN-HR-WFH-02?,1,tn-hr-wfh-02_pos_0,train
+What is the company policy regarding policy on apis tools?,Could you explain the employee guidelines for policy on apis tools under TN-HR-DATA?,1,tn-hr-data_pos_9,train
+How does the annual leave entitlement entitlement work at Kaveri Tech Solutions?,Can employees claim annual leave entitlement under policy TN-HR-LEAVE-01?,1,tn-hr-leave-01_pos_0_b,train
+What is the group health insurance entitlement in Chennai Tamil Nadu under TN-HR-HEALTH-05?,What is the group health insurance entitlement in London United Kingdom under TN-HR-HEALTH-05?,0,tn-hr-health-05_jurisdiction_neg_0,calibration
+What is the company policy regarding policy on trained calibrated?,Could you explain the employee guidelines for policy on trained calibrated under TN-HR-DATA?,1,tn-hr-data_pos_18,test
+How does the programming python entitlement work at Kaveri Tech Solutions?,Can employees claim programming python under policy TN-HR-DATA?,1,tn-hr-data_pos_4_b,calibration
+What job possibilities exist for a Bachelors in Homeland Security?,What jobs are available with a bachelor’s degree in Homeland Security?,1,qqp_pos_5,test
+How does concentric contractions differ from eccentric contractions?,How do concentric and eccentric contraction compare and contrast?,1,qqp_pos_5,test
+How do you deal with a fear of dying?,How can you reduce your fear of dying?,1,qqp_pos_5,test
+"Is there an end to the universe, and if not, is the universe infinite?",Is the Universe infinite or is there an end to the Universe?,1,qqp_pos_5,test
+What are some of the best films and TV shows that feature strong female protagonists?,What are the best female strong characters in films?,1,qqp_pos_5,test
+How can I make money online with free of cost?,How do I to make money online?,1,qqp_pos_5,test
+Where can I buy best quality customized cupcakes in Gold Coast?,Where can I find delicious cupcakes at Gold Coast?,1,qqp_pos_5,test
+Which are the best Hollywood thriller movies?,What are the best thriller movie in Hollywood?,1,qqp_pos_5,test
+How do you feel when someone upvotes your answer on Quora?,How does it feel to see upvotes to your answer on Quora?,1,qqp_pos_5,test
+How long does it take for a dead body to float to the surface after drowning ?,"When a dead body is in a river, how long does it take before it floats?",1,qqp_pos_5,test
+What will be the effect of banning 500 and 1000 notes on stock markets in India?,What will be the effect of the ban of the 1000rs and 500rs notes on the stock market?,1,qqp_pos_5,test
+How successful was odd even plan?,How successful was the Delhi's Odd-even plan?,1,qqp_pos_5,test
+How much funds should I raise?,How much money should I raise?,1,qqp_pos_5,test
+What are the rights of a prisoner?,"If I am in prison, what rights would I have?",1,qqp_pos_5,test
+Which are the best books to understand calculus?,What are good books to self study calculus?,1,qqp_pos_5,test
+How can I get free gems in Clash of Clans?,How can I get free gems Clash of Clans?,1,qqp_pos_5,test
+What the meaning of this all life?,What's are the meaning of life?,1,qqp_pos_5,test
+Why and how did you break up with her/him?,How and why did you break up with your ex?,1,qqp_pos_5,test
+If there will be a war between India and Pakistan who will win?,Who will win if a war starts between India and Pakistan?,1,qqp_pos_5,test
+What is the best way to get traffic on your website?,How do i get traffic for website?,1,qqp_pos_5,test
+What is the implemented nlp entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the implemented nlp entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_26,calibration
+What is the company policy regarding policy on data analysis?,Could you explain the employee guidelines for policy on data analysis under TN-HR-DATA?,1,tn-hr-data_pos_5,validation
+How does the melinia pitch entitlement work at Kaveri Tech Solutions?,Can employees claim melinia pitch under policy TN-HR-DATA?,1,tn-hr-data_pos_41_b,calibration
+What is the company policy regarding policy on transformers retrieves?,Could you explain the employee guidelines for policy on transformers retrieves under TN-HR-DATA?,1,tn-hr-data_pos_27,train
+What is the company policy regarding policy on manage budgeting?,Could you explain the employee guidelines for policy on manage budgeting under TN-HR-DATA?,1,tn-hr-data_pos_32,train
+What is the company policy regarding Data guidelines?,Could you explain the employee guidelines for Data guidelines under TN-HR-DATA?,1,tn-hr-data_pos_40,validation
+Do full-time permanent employees qualify for development while under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for development while under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_12,train
+What is the company policy regarding policy on contributed technical?,Could you explain the employee guidelines for policy on contributed technical under TN-HR-DATA?,1,tn-hr-data_pos_35,train
+Is the company provides limit 14.0 numeric_value under TN-FIN-RELOC-06?,Is the company provides limit 28.0 numeric_value under TN-FIN-RELOC-06?,0,tn-fin-reloc-06_num_neg_1,train
+How does the meal allowance entitlement work at Kaveri Tech Solutions?,Can employees claim meal allowance under policy TN-HR-MEAL-07?,1,tn-hr-meal-07_pos_2_b,calibration
+"Between Robert De Niro and Al Pacino, who is more successful?","Who do you regard as the best actor, Robert De Niro or Al Pacino?",0,qqp_neg_5,train
+Could Snoke secretly be Darth Maul?,How could Snoke be Darth Plagueis if he was killed by Emperor Palpatine?,0,qqp_neg_5,train
+Would you switch from Canon 6D to Leica D-LUX 109?,What tripod should I get for my Canon 6D?,0,qqp_neg_5,train
+How can I stop being addicted to love?,How do I stop being addicted to someone?,0,qqp_neg_5,train
+"I got job offer @ Chelmsford-Essex, London with £3764 PM pay-after tax deduction. Pls advice tentative monthly expenses for couple? & saving possible?","If I am leaving Norway, can I pay down my mortgage with my BSU account, and then sell my apartment without having to pay back the tax deduction I got for having BSU?",0,qqp_neg_5,train
+What is the best way to gain confidence?,How can I speak with more clarity and confidence?,0,qqp_neg_5,train
+Which are the prospering towns in Kerala?,Why are there so many Christians in Kerala?,0,qqp_neg_5,train
+Are government employees eligible to Sukanya Samrudi Yojana?,Can a Government employee apply IEC?,0,qqp_neg_5,train
+How can I stop being afraid of working?,How do you stop being afraid of everything?,0,qqp_neg_5,train
+What is the difference between gross salary and CTC?,"There seems to be a difference between my weekly paycheck and the yearly salary my employer agreed upon, how does that work?",0,qqp_neg_5,train
+How much would it cost to hire Jerry Seinfeld for 1-2 hours?,How much on average would it cost to video tape a 2 hour presentation?,0,qqp_neg_5,train
+Which is correct - 'Looking forward to speak with you' or 'Look forward to speak with you'?,"Which is correct: ""speak with"" or ""speak to""?",0,qqp_neg_5,train
+How do I switch from Apple Music to Spotify?,Should I switch from Spotify to Apple Music?,0,qqp_neg_5,train
+How do you make life suit you and stop life from abusing you mentally and emotionally?,"Why are emotionally abusive people in my life? Several ex boyfriends, friends, and past coworkers/bosses have been abusers. Do I attract them?",0,qqp_neg_5,train
+How forgetful are you?,How can I forget my wife?,0,qqp_neg_5,train
+What are stereotypes about the United Kingdom?,What do Americans think about the United Kingdom?,0,qqp_neg_5,train
+How many years Britain ruled India?,What is the standard amount of time off given for an international relocation?,0,qqp_neg_5,train
+How can I transfer money from Skrill to a PayPal account?,How can I send money from my PayPal account to my Skrill account to withdraw?,0,qqp_neg_5,train
+At what age should someone lose their virginity?,"At what age, how, and where did you lose your virginity?",0,qqp_neg_5,train
+Is 7 days too late for rabies vaccine after a possible non-bite exposure?,Can I take rabies injection after 1 day of dog bite?,0,qqp_neg_5,train
+Do full-time permanent employees qualify for manage budgeting under TN-HR-DATA?,Do external third-party contractors qualify for manage budgeting under TN-HR-DATA?,0,tn-hr-data_category_neg_32,train
+What is the pull request entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the pull request entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_25,train
+Do full-time permanent employees qualify for software systems under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for software systems under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_1,train
+Do full-time permanent employees qualify for machine learning under TN-HR-DATA?,Do external third-party contractors qualify for machine learning under TN-HR-DATA?,0,tn-hr-data_category_neg_8,train
+Do full-time permanent employees qualify for relocation grant under TN-FIN-RELOC-06?,Do external third-party contractors qualify for relocation grant under TN-FIN-RELOC-06?,0,tn-fin-reloc-06_category_neg_0,train
+What is the company policy regarding policy on foss cit?,Could you explain the employee guidelines for policy on foss cit under TN-HR-DATA?,1,tn-hr-data_pos_34,validation
+Is the full time limit 2.0 days under TN-HR-WFH-02?,Is the full time limit 4.0 days under TN-HR-WFH-02?,0,tn-hr-wfh-02_num_neg_0,train
+What is the machine learning entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the machine learning entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_8,train
+What is the company policy regarding policy on coordinate members?,Could you explain the employee guidelines for policy on coordinate members under TN-HR-DATA?,1,tn-hr-data_pos_33,test
+What is the company policy regarding policy on cgpa semester?,Could you explain the employee guidelines for policy on cgpa semester under TN-HR-DATA?,1,tn-hr-data_pos_38,calibration
+How does the local taxi entitlement work at Kaveri Tech Solutions?,Can employees claim local taxi under policy TN-FIN-TRAVEL-03?,1,tn-fin-travel-03_pos_2_b,train
+What is the cachemind python entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the cachemind python entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_15,train
+How does the development while entitlement work at Kaveri Tech Solutions?,Can employees claim development while under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_12_b,train
+What is the company policy regarding policy on html css?,Could you explain the employee guidelines for policy on html css under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_6,train
+How does the html css entitlement work at Kaveri Tech Solutions?,Can employees claim html css under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_6_b,validation
+Do full-time permanent employees qualify for cashless hospitalization under TN-HR-HEALTH-05?,Do external third-party contractors qualify for cashless hospitalization under TN-HR-HEALTH-05?,0,tn-hr-health-05_category_neg_1,validation
+Do full-time permanent employees qualify for built semantic under TN-HR-DATA?,Do external third-party contractors qualify for built semantic under TN-HR-DATA?,0,tn-hr-data_category_neg_16,train
+What is the company policy regarding policy on developed student?,Could you explain the employee guidelines for policy on developed student under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_19,test
+What is the developed academic entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the developed academic entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_14,test
+How does the implemented nlp entitlement work at Kaveri Tech Solutions?,Can employees claim implemented nlp under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_26_b,test
+What is the identifying sales entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the identifying sales entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_22,train
+Is the foss cit limit 3.0 numeric_value under TN-OPERATIONS-SDE?,Is the foss cit limit 6.0 numeric_value under TN-OPERATIONS-SDE?,0,tn-operations-sde_num_neg_32,test
+What is the company policy regarding policy on pantry stations?,Could you explain the employee guidelines for policy on pantry stations under TN-HR-MEAL-07?,1,tn-hr-meal-07_pos_4,train
+Is the coordinate team limit 10.0 numeric_value under TN-OPERATIONS-SDE?,Is the coordinate team limit 20.0 numeric_value under TN-OPERATIONS-SDE?,0,tn-operations-sde_num_neg_31,validation
+What is the company policy regarding policy on core business?,Could you explain the employee guidelines for policy on core business under TN-HR-WFH-02?,1,tn-hr-wfh-02_pos_1,validation
+Do full-time permanent employees qualify for pantry stations under TN-HR-MEAL-07?,Do external third-party contractors qualify for pantry stations under TN-HR-MEAL-07?,0,tn-hr-meal-07_category_neg_4,train
+What is the company policy regarding policy on melinia pitch?,Could you explain the employee guidelines for policy on melinia pitch under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_39,test
+Do full-time permanent employees qualify for company laptop under TN-IT-SEC-04?,Do external third-party contractors qualify for company laptop under TN-IT-SEC-04?,0,tn-it-sec-04_category_neg_0,train
+Do full-time permanent employees qualify for dashboard development under TN-HR-DATA?,Do external third-party contractors qualify for dashboard development under TN-HR-DATA?,0,tn-hr-data_category_neg_2,train
+What is the company policy regarding Sick Leave allocation?,Could you explain the employee guidelines for Sick Leave allocation under TN-HR-LEAVE-01?,1,tn-hr-leave-01_pos_1,calibration
+How does the provide grounded entitlement work at Kaveri Tech Solutions?,Can employees claim provide grounded under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_17_b,calibration
+What is the foss cit entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the foss cit entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_34,train
+Is the maternity leave limit 26.0 numeric_value under TN-HR-LEAVE-01?,Is the maternity leave limit 52.0 numeric_value under TN-HR-LEAVE-01?,0,tn-hr-leave-01_num_neg_3,test
+Do full-time permanent employees qualify for vehicle counts under TN-HR-DATA?,Do external third-party contractors qualify for vehicle counts under TN-HR-DATA?,0,tn-hr-data_category_neg_24,validation
+What is the expertise value entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the expertise value entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_3,train
+What is the implemented semantic entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the implemented semantic entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_16,calibration
+What is the annual leave entitlement entitlement in Chennai Tamil Nadu under TN-HR-LEAVE-01?,What is the annual leave entitlement entitlement in London United Kingdom under TN-HR-LEAVE-01?,0,tn-hr-leave-01_jurisdiction_neg_0,train
+What is the company policy regarding policy on dashboard development?,Could you explain the employee guidelines for policy on dashboard development under TN-HR-DATA?,1,tn-hr-data_pos_2,train
+What is the company policy regarding policy on independent contractors?,Could you explain the employee guidelines for policy on independent contractors under TN-HR-LEAVE-01?,1,tn-hr-leave-01_pos_4,train
+How does the roadmaps featuring entitlement work at Kaveri Tech Solutions?,Can employees claim roadmaps featuring under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_22_b,train
+How does the accessing kaveri entitlement work at Kaveri Tech Solutions?,Can employees claim accessing kaveri under policy TN-IT-SEC-04?,1,tn-it-sec-04_pos_1_b,train
+What is the company policy regarding policy on provide grounded?,Could you explain the employee guidelines for policy on provide grounded under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_17,validation
+What is the dashboard development entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the dashboard development entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_2,validation
+What is the manage budgeting entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the manage budgeting entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_32,validation
+What is the company policy regarding policy on confidence bounds?,Could you explain the employee guidelines for policy on confidence bounds under TN-HR-DATA?,1,tn-hr-data_pos_19,validation
+What is the company policy regarding Sde guidelines?,Could you explain the employee guidelines for Sde guidelines under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_38,validation
+Why is creativity important?,Why creativity is important?,1,qqp_pos_3,train
+How do you take a screenshot on a Mac laptop?,How do I take a screenshot on my MacBook Pro? What are some instructions?,1,qqp_pos_3,train
+Why do people hate Hillary Clinton?,What are the reasons that people dislike Hillary Clinton?,1,qqp_pos_3,train
+What is the easiest way to become a billionaire($)?,What is the best way to become a billionaire?,1,qqp_pos_3,train
+"What was the significance of the battle of Somme, and how did this battle compare and contrast to the Battle of Rostov?","What was the significance of the battle of Somme, and how did this battle compare and contrast to the Battle of Riyadh?",1,qqp_pos_3,train
+Is the neutron star made up of?,Is the neutron star made up of only neutrons?,1,qqp_pos_3,train
+What is the best combination of courses I can take up along with CA to enhance my career?,What courses must be taken along with CA course?,1,qqp_pos_3,train
+How can I become more fluent in Chinese?,How can I become fluent in chinese?,1,qqp_pos_3,train
+Is it possible to pursue many different things in life?,How do I refuse to chose between different things to do in my life?,1,qqp_pos_3,train
+How do I earn from Quora?,Can I earn money on Quora?,1,qqp_pos_3,train
+I got a 3.8 GPA. Is it enough to get into top universities like Harvard?,Is a 3.8 GPA sufficient to get into a top school?,1,qqp_pos_3,train
+How can I stop being so possessive?,How do I stop being over possessive for a person whom I love?,1,qqp_pos_3,train
+If Hillary Clinton could not continue her Presidential campaign how would the Democratic Party choose a new candidate?,If Hillary Clinton can no longer serve as the Democratic nominee how would her successor be chosen?,1,qqp_pos_3,train
+What are some must watch TV shows before you die?,Are there any must watch TV shows?,1,qqp_pos_3,train
+What if I hired two private eyes and ordered them to follow each other?,Would I be able to hire two private investigators and then get them to follow each other?,1,qqp_pos_3,train
+Which business is good start up in Hyderabad?,Which business is better to start in Hyderabad?,1,qqp_pos_3,train
+How can I learn computer security?,How can I get started to learn information security?,1,qqp_pos_3,train
+Did Ben Affleck shine more than Christian Bale as Batman?,"No fanboys please, but who was the true batman, Christian Bale or Ben Affleck?",1,qqp_pos_3,train
+What are the effects of demonitization of 500 and 1000 rupees notes on real estate sector?,What will be the impact of scrapping of ₹500 and ₹1000 rupee notes on the real estate market?,1,qqp_pos_3,train
+How do you get deleted Instagram chats?,How can I view deleted Instagram dms?,1,qqp_pos_3,train
+What is the company policy regarding policy on references handle?,Could you explain the employee guidelines for policy on references handle under TN-HR-DATA?,1,tn-hr-data_pos_29,test
+What is the accessing kaveri entitlement in Chennai Tamil Nadu under TN-IT-SEC-04?,What is the accessing kaveri entitlement in London United Kingdom under TN-IT-SEC-04?,0,tn-it-sec-04_jurisdiction_neg_1,train
+How does the cachemind python entitlement work at Kaveri Tech Solutions?,Can employees claim cachemind python under policy TN-HR-DATA?,1,tn-hr-data_pos_15_b,test
+How does the developed full entitlement work at Kaveri Tech Solutions?,Can employees claim developed full under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_24_b,train
+What is the company policy regarding hybrid work schedule?,Could you explain the employee guidelines for hybrid work schedule under TN-HR-WFH-02?,1,tn-hr-wfh-02_pos_2,train
+What is the foss cit entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the foss cit entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_31,train
+How does the node express entitlement work at Kaveri Tech Solutions?,Can employees claim node express under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_5_b,train
+Is the foss cit limit 5.0 numeric_value under TN-HR-DATA?,Is the foss cit limit 10.0 numeric_value under TN-HR-DATA?,0,tn-hr-data_num_neg_31,train
+What is the company policy regarding policy on conflict detection?,Could you explain the employee guidelines for policy on conflict detection under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_27,validation
+Do full-time permanent employees qualify for company observes under TN-HR-LEAVE-01?,Do external third-party contractors qualify for company observes under TN-HR-LEAVE-01?,0,tn-hr-leave-01_category_neg_2,train
+How does the built document entitlement work at Kaveri Tech Solutions?,Can employees claim built document under policy TN-HR-DATA?,1,tn-hr-data_pos_26_b,validation
+What is the roles responsibilities entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the roles responsibilities entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_28,train
+What is the employees also entitlement in Chennai Tamil Nadu under TN-HR-HEALTH-05?,What is the employees also entitlement in London United Kingdom under TN-HR-HEALTH-05?,0,tn-hr-health-05_jurisdiction_neg_2,calibration
+What is the company policy regarding policy on development while?,Could you explain the employee guidelines for policy on development while under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_12,train
+Is the class venkatalakshmi limit 12.0 numeric_value under TN-HR-DATA?,Is the class venkatalakshmi limit 24.0 numeric_value under TN-HR-DATA?,0,tn-hr-data_num_neg_39,train
+What is the software systems entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the software systems entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_1,train
+What is the company policy regarding policy on coordinate team?,Could you explain the employee guidelines for policy on coordinate team under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_31,train
+Is the lakshmi life limit 1.0 numeric_value under TN-HR-DATA?,Is the lakshmi life limit 2.0 numeric_value under TN-HR-DATA?,0,tn-hr-data_num_neg_10,calibration
+What is the company policy regarding policy on developed academic?,Could you explain the employee guidelines for policy on developed academic under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_14,train
+What is the company policy regarding policy on company observes?,Could you explain the employee guidelines for policy on company observes under TN-HR-LEAVE-01?,1,tn-hr-leave-01_pos_2,calibration
+What is the campuscollab react entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the campuscollab react entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_18,train
+What is the foss cit entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the foss cit entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_25,validation
+Is the core business limit 9.0 numeric_value under TN-HR-WFH-02?,Is the core business limit 18.0 numeric_value under TN-HR-WFH-02?,0,tn-hr-wfh-02_num_neg_1,train
+What is the company policy regarding policy on class venkatalakshmi?,Could you explain the employee guidelines for policy on class venkatalakshmi under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_37,train
+How does the roles responsibilities entitlement work at Kaveri Tech Solutions?,Can employees claim roles responsibilities under policy TN-HR-DATA?,1,tn-hr-data_pos_30_b,train
+What is the company policy regarding policy on foss cit?,Could you explain the employee guidelines for policy on foss cit under TN-HR-DATA?,1,tn-hr-data_pos_25,calibration
+What is the confidence bounds entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the confidence bounds entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_19,validation
+How does the cashless hospitalization entitlement work at Kaveri Tech Solutions?,Can employees claim cashless hospitalization under policy TN-HR-HEALTH-05?,1,tn-hr-health-05_pos_1_b,train
+Is the meal allowance limit 3.0 inr under TN-FIN-TRAVEL-03?,Is the meal allowance limit 6.0 inr under TN-FIN-TRAVEL-03?,0,tn-fin-travel-03_num_neg_0,train
+How does the identify equivalent entitlement work at Kaveri Tech Solutions?,Can employees claim identify equivalent under policy TN-HR-DATA?,1,tn-hr-data_pos_17_b,train
+What is the company policy regarding policy on programming languages?,Could you explain the employee guidelines for policy on programming languages under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_4,train
+What is the vehicle counts entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the vehicle counts entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_24,train
+What is the company policy regarding digital meal allowance and food vouchers?,Could you explain the employee guidelines for digital meal allowance and food vouchers under TN-FIN-TRAVEL-03?,1,tn-fin-travel-03_pos_0,test
+How does the programming languages entitlement work at Kaveri Tech Solutions?,Can employees claim programming languages under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_4_b,train
+How does the coordinate members entitlement work at Kaveri Tech Solutions?,Can employees claim coordinate members under policy TN-HR-DATA?,1,tn-hr-data_pos_33_b,test
+What is the rdevasri gmail entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the rdevasri gmail entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_0,train
+How does the solving skills entitlement work at Kaveri Tech Solutions?,Can employees claim solving skills under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_2_b,validation
+Do full-time permanent employees qualify for while ensuring under TN-HR-DATA?,Do external third-party contractors qualify for while ensuring under TN-HR-DATA?,0,tn-hr-data_category_neg_14,train
+How does the developed inventory entitlement work at Kaveri Tech Solutions?,Can employees claim developed inventory under policy TN-HR-DATA?,1,tn-hr-data_pos_23_b,train
+What is the foss cit entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the foss cit entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_32,train
+Do full-time permanent employees qualify for data analysis under TN-HR-DATA?,Do external third-party contractors qualify for data analysis under TN-HR-DATA?,0,tn-hr-data_category_neg_5,train
+How does the two wheeler entitlement work at Kaveri Tech Solutions?,Can employees claim two wheeler under policy TN-HR-DATA?,1,tn-hr-data_pos_20_b,validation
+Do full-time permanent employees qualify for developed contributed under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for developed contributed under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_9,train
+How does the business insights entitlement work at Kaveri Tech Solutions?,Can employees claim business insights under policy TN-HR-DATA?,1,tn-hr-data_pos_3_b,validation
+What is the sde entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the sde entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_38,train
+What is the apis tools entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the apis tools entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_9,validation
+How does the data handling entitlement work at Kaveri Tech Solutions?,Can employees claim data handling under policy TN-IT-SEC-04?,1,tn-it-sec-04_pos_2_b,validation
+How does the data entitlement work at Kaveri Tech Solutions?,Can employees claim data under policy TN-HR-DATA?,1,tn-hr-data_pos_40_b,train
+How does the roles responsibilities entitlement work at Kaveri Tech Solutions?,Can employees claim roles responsibilities under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_28_b,train
+How does the hosted technical entitlement work at Kaveri Tech Solutions?,Can employees claim hosted technical under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_34_b,validation
+What is the company policy regarding policy on company provides?,Could you explain the employee guidelines for policy on company provides under TN-FIN-RELOC-06?,1,tn-fin-reloc-06_pos_1,train
+What is the company policy regarding business travel and daily per diem?,Could you explain the employee guidelines for business travel and daily per diem under TN-FIN-TRAVEL-03?,1,tn-fin-travel-03_pos_3,calibration
+Do full-time permanent employees qualify for cachemind python under TN-HR-DATA?,Do external third-party contractors qualify for cachemind python under TN-HR-DATA?,0,tn-hr-data_category_neg_15,train
+How does the rdevasri gmail entitlement work at Kaveri Tech Solutions?,Can employees claim rdevasri gmail under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_0_b,validation
+What is the rdevasri gmail entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the rdevasri gmail entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_0,validation
+What is the company policy regarding policy on roadmaps featuring?,Could you explain the employee guidelines for policy on roadmaps featuring under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_22,calibration
+Do full-time permanent employees qualify for hybrid working under TN-HR-WFH-02?,Do external third-party contractors qualify for hybrid working under TN-HR-WFH-02?,0,tn-hr-wfh-02_category_neg_2,train
+How does the data analysis entitlement work at Kaveri Tech Solutions?,Can employees claim data analysis under policy TN-HR-DATA?,1,tn-hr-data_pos_5_b,calibration
+Do full-time permanent employees qualify for rdevasri gmail under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for rdevasri gmail under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_0,train
+What is the independent contractors entitlement in Chennai Tamil Nadu under TN-HR-LEAVE-01?,What is the independent contractors entitlement in London United Kingdom under TN-HR-LEAVE-01?,0,tn-hr-leave-01_jurisdiction_neg_4,train
+How does the cafeteria facilities entitlement work at Kaveri Tech Solutions?,Can employees claim cafeteria facilities under policy TN-HR-MEAL-07?,1,tn-hr-meal-07_pos_0_b,train
+How does the cafeteria facilities entitlement work at Kaveri Tech Solutions?,Can employees claim cafeteria facilities under policy TN-HR-MEAL-07?,1,tn-hr-meal-07_pos_3_b,train
+How does the integrated locally entitlement work at Kaveri Tech Solutions?,Can employees claim integrated locally under policy TN-HR-DATA?,1,tn-hr-data_pos_28_b,validation
+How does the pantry stations entitlement work at Kaveri Tech Solutions?,Can employees claim pantry stations under policy TN-HR-MEAL-07?,1,tn-hr-meal-07_pos_4_b,train
+Do full-time permanent employees qualify for hotel accommodation under TN-FIN-TRAVEL-03?,Do external third-party contractors qualify for hotel accommodation under TN-FIN-TRAVEL-03?,0,tn-fin-travel-03_category_neg_1,validation
+What is the integrated react entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the integrated react entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_11,validation
+Do full-time permanent employees qualify for data visualization under TN-HR-DATA?,Do external third-party contractors qualify for data visualization under TN-HR-DATA?,0,tn-hr-data_category_neg_6,train
+How does the machine learning entitlement work at Kaveri Tech Solutions?,Can employees claim machine learning under policy TN-HR-DATA?,1,tn-hr-data_pos_8_b,train
+Do full-time permanent employees qualify for references handle under TN-HR-DATA?,Do external third-party contractors qualify for references handle under TN-HR-DATA?,0,tn-hr-data_category_neg_29,train
+What is the organized supported entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the organized supported entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_33,train
+Do full-time permanent employees qualify for node express under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for node express under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_5,train
+What is the meal allowance entitlement in Chennai Tamil Nadu under TN-FIN-TRAVEL-03?,What is the meal allowance entitlement in London United Kingdom under TN-FIN-TRAVEL-03?,0,tn-fin-travel-03_jurisdiction_neg_0,train
+How does the relocation grant entitlement work at Kaveri Tech Solutions?,Can employees claim relocation grant under policy TN-FIN-RELOC-06?,1,tn-fin-reloc-06_pos_0_b,train
+How does the integrated react entitlement work at Kaveri Tech Solutions?,Can employees claim integrated react under policy TN-HR-DATA?,1,tn-hr-data_pos_13_b,train
+Do full-time permanent employees qualify for two wheeler under TN-HR-DATA?,Do external third-party contractors qualify for two wheeler under TN-HR-DATA?,0,tn-hr-data_category_neg_20,test
+Do full-time permanent employees qualify for pull request under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for pull request under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_25,train
+What is the company policy regarding policy on features efficient?,Could you explain the employee guidelines for policy on features efficient under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_10,test
+What is the lakshmi life entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the lakshmi life entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_10,train
+What is the company policy regarding policy on foss cit?,Could you explain the employee guidelines for policy on foss cit under TN-HR-DATA?,1,tn-hr-data_pos_31,train
+Do full-time permanent employees qualify for wholesome breakfast under TN-HR-MEAL-07?,Do external third-party contractors qualify for wholesome breakfast under TN-HR-MEAL-07?,0,tn-hr-meal-07_category_neg_1,validation
+What is the company policy regarding policy on lakshmi life?,Could you explain the employee guidelines for policy on lakshmi life under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_8,train
+Do full-time permanent employees qualify for coordinate members under TN-HR-DATA?,Do external third-party contractors qualify for coordinate members under TN-HR-DATA?,0,tn-hr-data_category_neg_33,train
+Do full-time permanent employees qualify for class venkatalakshmi under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for class venkatalakshmi under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_37,calibration
+What is the formation project entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the formation project entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_20,train
+What is the sentence transformers entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the sentence transformers entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_7,calibration
+Do full-time permanent employees qualify for identifying sales under TN-HR-DATA?,Do external third-party contractors qualify for identifying sales under TN-HR-DATA?,0,tn-hr-data_category_neg_22,train
+What is the company policy regarding policy on built semantic?,Could you explain the employee guidelines for policy on built semantic under TN-HR-DATA?,1,tn-hr-data_pos_16,train
+Do full-time permanent employees qualify for formation project under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for formation project under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_20,train
+What is the company policy regarding policy on organized supported?,Could you explain the employee guidelines for policy on organized supported under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_33,train
+Do full-time permanent employees qualify for sentence transformers under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for sentence transformers under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_7,test
+How does the manage budgeting entitlement work at Kaveri Tech Solutions?,Can employees claim manage budgeting under policy TN-HR-DATA?,1,tn-hr-data_pos_32_b,train
+What is the company policy regarding policy on accessing kaveri?,Could you explain the employee guidelines for policy on accessing kaveri under TN-IT-SEC-04?,1,tn-it-sec-04_pos_1,calibration
+What is the developed contributed entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the developed contributed entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_11,validation
+Do full-time permanent employees qualify for class venkatalakshmi under TN-HR-DATA?,Do external third-party contractors qualify for class venkatalakshmi under TN-HR-DATA?,0,tn-hr-data_category_neg_39,train
+What is the company policy regarding policy on efficient document?,Could you explain the employee guidelines for policy on efficient document under TN-HR-DATA?,1,tn-hr-data_pos_12,validation
+Do full-time permanent employees qualify for providing centralized under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for providing centralized under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_15,validation
+What is the efficient document entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the efficient document entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_12,validation
+What is the trained calibrated entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the trained calibrated entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_18,train
+Do full-time permanent employees qualify for cgpa semester under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for cgpa semester under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_36,train
+Do full-time permanent employees qualify for hosted technical under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for hosted technical under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_34,calibration
+Do full-time permanent employees qualify for independent contractors under TN-HR-LEAVE-01?,Do external third-party contractors qualify for independent contractors under TN-HR-LEAVE-01?,0,tn-hr-leave-01_category_neg_4,train
+Is the professional household limit 25.0 inr under TN-FIN-RELOC-06?,Is the professional household limit 50.0 inr under TN-FIN-RELOC-06?,0,tn-fin-reloc-06_num_neg_2,train
+What is the company policy regarding policy on software systems?,Could you explain the employee guidelines for policy on software systems under TN-HR-DATA?,1,tn-hr-data_pos_1,train
+How does the campuscollab react entitlement work at Kaveri Tech Solutions?,Can employees claim campuscollab react under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_18_b,calibration
+Is the organized supported limit 5.0 numeric_value under TN-OPERATIONS-SDE?,Is the organized supported limit 10.0 numeric_value under TN-OPERATIONS-SDE?,0,tn-operations-sde_num_neg_33,train
+What is the programming python entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the programming python entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_4,train
+What is the company policy regarding policy on developed contributed?,Could you explain the employee guidelines for policy on developed contributed under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_9,train
+How does the transformers retrieves entitlement work at Kaveri Tech Solutions?,Can employees claim transformers retrieves under policy TN-HR-DATA?,1,tn-hr-data_pos_27_b,train
+What is the company policy regarding policy on studentdrive react?,Could you explain the employee guidelines for policy on studentdrive react under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_13,calibration
+Do full-time permanent employees qualify for software systems under TN-HR-DATA?,Do external third-party contractors qualify for software systems under TN-HR-DATA?,0,tn-hr-data_category_neg_1,train
+Is the cgpa semester limit 8.0 numeric_value under TN-HR-DATA?,Is the cgpa semester limit 16.0 numeric_value under TN-HR-DATA?,0,tn-hr-data_num_neg_38,calibration
+What is the company observes entitlement in Chennai Tamil Nadu under TN-HR-LEAVE-01?,What is the company observes entitlement in London United Kingdom under TN-HR-LEAVE-01?,0,tn-hr-leave-01_jurisdiction_neg_2,train
+How does the foss cit entitlement work at Kaveri Tech Solutions?,Can employees claim foss cit under policy TN-HR-DATA?,1,tn-hr-data_pos_34_b,validation
+How does the organized supported entitlement work at Kaveri Tech Solutions?,Can employees claim organized supported under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_33_b,train
+How does the apis tools entitlement work at Kaveri Tech Solutions?,Can employees claim apis tools under policy TN-HR-DATA?,1,tn-hr-data_pos_9_b,train
+Do full-time permanent employees qualify for foss cit under TN-HR-DATA?,Do external third-party contractors qualify for foss cit under TN-HR-DATA?,0,tn-hr-data_category_neg_25,validation
+How does the hybrid working entitlement work at Kaveri Tech Solutions?,Can employees claim hybrid working under policy TN-HR-WFH-02?,1,tn-hr-wfh-02_pos_2_b,calibration
+What is the company policy regarding policy on formation project?,Could you explain the employee guidelines for policy on formation project under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_20,train
+Do full-time permanent employees qualify for professional household under TN-FIN-RELOC-06?,Do external third-party contractors qualify for professional household under TN-FIN-RELOC-06?,0,tn-fin-reloc-06_category_neg_2,test
+How does the developed contributed entitlement work at Kaveri Tech Solutions?,Can employees claim developed contributed under policy TN-HR-DATA?,1,tn-hr-data_pos_11_b,calibration
+Is the cafeteria facilities limit 8.0 numeric_value under TN-HR-MEAL-07?,Is the cafeteria facilities limit 16.0 numeric_value under TN-HR-MEAL-07?,0,tn-hr-meal-07_num_neg_3,validation
+Do full-time permanent employees qualify for integrated locally under TN-HR-DATA?,Do external third-party contractors qualify for integrated locally under TN-HR-DATA?,0,tn-hr-data_category_neg_28,train
+What is the studentdrive react entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the studentdrive react entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_13,train
+How does the foss cit entitlement work at Kaveri Tech Solutions?,Can employees claim foss cit under policy TN-HR-DATA?,1,tn-hr-data_pos_31_b,train
+What is the meal allowance entitlement in Chennai Tamil Nadu under TN-HR-MEAL-07?,What is the meal allowance entitlement in London United Kingdom under TN-HR-MEAL-07?,0,tn-hr-meal-07_jurisdiction_neg_2,calibration
+What is the company policy regarding policy on supported organization?,Could you explain the employee guidelines for policy on supported organization under TN-HR-DATA?,1,tn-hr-data_pos_36,train
+What is the software systems entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the software systems entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_37,train
+What is the provide grounded entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the provide grounded entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_17,train
+What is the built semantic entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the built semantic entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_16,train
+Do full-time permanent employees qualify for transformers retrieves under TN-HR-DATA?,Do external third-party contractors qualify for transformers retrieves under TN-HR-DATA?,0,tn-hr-data_category_neg_27,train
+How does the expertise value entitlement work at Kaveri Tech Solutions?,Can employees claim expertise value under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_3_b,calibration
+Do full-time permanent employees qualify for roles responsibilities under TN-HR-DATA?,Do external third-party contractors qualify for roles responsibilities under TN-HR-DATA?,0,tn-hr-data_category_neg_30,calibration
+What is the two wheeler entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the two wheeler entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_20,calibration
+What is the supported organization entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the supported organization entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_36,validation
+Do full-time permanent employees qualify for efficient document under TN-HR-DATA?,Do external third-party contractors qualify for efficient document under TN-HR-DATA?,0,tn-hr-data_category_neg_12,validation
+Do full-time permanent employees qualify for engineered rule under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for engineered rule under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_21,validation
+What is the built document entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the built document entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_26,calibration
+What is the company policy regarding policy on cleaned analyzed?,Could you explain the employee guidelines for policy on cleaned analyzed under TN-HR-DATA?,1,tn-hr-data_pos_21,train
+How does the company provides entitlement work at Kaveri Tech Solutions?,Can employees claim company provides under policy TN-FIN-RELOC-06?,1,tn-fin-reloc-06_pos_1_b,train
+Is the company observes limit 10.0 numeric_value under TN-HR-LEAVE-01?,Is the company observes limit 20.0 numeric_value under TN-HR-LEAVE-01?,0,tn-hr-leave-01_num_neg_2,test
+What is the engineered rule entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the engineered rule entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_21,train
+What is the cgpa semester entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the cgpa semester entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_38,calibration
+How does the developed academic entitlement work at Kaveri Tech Solutions?,Can employees claim developed academic under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_14_b,validation
+How does the wholesome breakfast entitlement work at Kaveri Tech Solutions?,Can employees claim wholesome breakfast under policy TN-HR-MEAL-07?,1,tn-hr-meal-07_pos_1_b,calibration
+Is the trained calibrated limit 0.0 numeric_value under TN-HR-DATA?,Is the trained calibrated limit 10 numeric_value under TN-HR-DATA?,0,tn-hr-data_num_neg_18,train
+What is the company policy regarding policy on data visualization?,Could you explain the employee guidelines for policy on data visualization under TN-HR-DATA?,1,tn-hr-data_pos_6,validation
+Do full-time permanent employees qualify for meal allowance under TN-FIN-TRAVEL-03?,Do external third-party contractors qualify for meal allowance under TN-FIN-TRAVEL-03?,0,tn-fin-travel-03_category_neg_0,train
+What is the software systems entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the software systems entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_1,test
+How does the supported organization entitlement work at Kaveri Tech Solutions?,Can employees claim supported organization under policy TN-HR-DATA?,1,tn-hr-data_pos_36_b,train
+What is the company policy regarding policy on sentence transformers?,Could you explain the employee guidelines for policy on sentence transformers under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_7,train
+Is the hybrid working limit 1.0 inr under TN-HR-WFH-02?,Is the hybrid working limit 2.0 inr under TN-HR-WFH-02?,0,tn-hr-wfh-02_num_neg_2,validation
+How does the sentence transformers entitlement work at Kaveri Tech Solutions?,Can employees claim sentence transformers under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_7_b,train
+Do full-time permanent employees qualify for contributed technical under TN-HR-DATA?,Do external third-party contractors qualify for contributed technical under TN-HR-DATA?,0,tn-hr-data_category_neg_35,train
+What is the company policy regarding policy on class venkatalakshmi?,Could you explain the employee guidelines for policy on class venkatalakshmi under TN-HR-DATA?,1,tn-hr-data_pos_39,train
+What is the company policy regarding policy on software systems?,Could you explain the employee guidelines for policy on software systems under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_35,train
+Do full-time permanent employees qualify for solving skills under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for solving skills under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_2,validation
+How does the efficient document entitlement work at Kaveri Tech Solutions?,Can employees claim efficient document under policy TN-HR-DATA?,1,tn-hr-data_pos_12_b,train
+How does the hotel accommodation entitlement work at Kaveri Tech Solutions?,Can employees claim hotel accommodation under policy TN-FIN-TRAVEL-03?,1,tn-fin-travel-03_pos_1_b,train
+How does the sde entitlement work at Kaveri Tech Solutions?,Can employees claim sde under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_38_b,validation
+Do full-time permanent employees qualify for local taxi under TN-FIN-TRAVEL-03?,Do external third-party contractors qualify for local taxi under TN-FIN-TRAVEL-03?,0,tn-fin-travel-03_category_neg_2,validation
+What is the company policy regarding policy on engineered rule?,Could you explain the employee guidelines for policy on engineered rule under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_21,train
+What is the while ensuring entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the while ensuring entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_14,test
+What is the roadmaps featuring entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the roadmaps featuring entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_22,test
+How does the melinia pitch entitlement work at Kaveri Tech Solutions?,Can employees claim melinia pitch under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_39_b,train
+How does the class venkatalakshmi entitlement work at Kaveri Tech Solutions?,Can employees claim class venkatalakshmi under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_37_b,train
+What is the company policy regarding digital meal allowance and food vouchers?,Could you explain the employee guidelines for digital meal allowance and food vouchers under TN-HR-MEAL-07?,1,tn-hr-meal-07_pos_2,calibration
+What is the cafeteria facilities entitlement in Chennai Tamil Nadu under TN-HR-MEAL-07?,What is the cafeteria facilities entitlement in London United Kingdom under TN-HR-MEAL-07?,0,tn-hr-meal-07_jurisdiction_neg_3,train
+Do full-time permanent employees qualify for expertise value under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for expertise value under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_3,calibration
+Is the wholesome breakfast limit 40.0 inr under TN-HR-MEAL-07?,Is the wholesome breakfast limit 80.0 inr under TN-HR-MEAL-07?,0,tn-hr-meal-07_num_neg_1,test
+What is the business insights entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the business insights entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_3,validation
+Do full-time permanent employees qualify for sick leave under TN-HR-LEAVE-01?,Do external third-party contractors qualify for sick leave under TN-HR-LEAVE-01?,0,tn-hr-leave-01_category_neg_1,train
+Do full-time permanent employees qualify for programming python under TN-HR-DATA?,Do external third-party contractors qualify for programming python under TN-HR-DATA?,0,tn-hr-data_category_neg_4,validation
+What is the company policy regarding policy on rdevasri gmail?,Could you explain the employee guidelines for policy on rdevasri gmail under TN-HR-DATA?,1,tn-hr-data_pos_0,train
+How does the cleaned analyzed entitlement work at Kaveri Tech Solutions?,Can employees claim cleaned analyzed under policy TN-HR-DATA?,1,tn-hr-data_pos_21_b,calibration
+How does the built semantic entitlement work at Kaveri Tech Solutions?,Can employees claim built semantic under policy TN-HR-DATA?,1,tn-hr-data_pos_16_b,train
+Do full-time permanent employees qualify for group health insurance under TN-HR-HEALTH-05?,Do external third-party contractors qualify for group health insurance under TN-HR-HEALTH-05?,0,tn-hr-health-05_category_neg_0,train
+Do full-time permanent employees qualify for cafeteria facilities under TN-HR-MEAL-07?,Do external third-party contractors qualify for cafeteria facilities under TN-HR-MEAL-07?,0,tn-hr-meal-07_category_neg_0,validation
+What is the sick leave entitlement in Chennai Tamil Nadu under TN-HR-LEAVE-01?,What is the sick leave entitlement in London United Kingdom under TN-HR-LEAVE-01?,0,tn-hr-leave-01_jurisdiction_neg_1,train
+Is the group health insurance limit 5.0 inr under TN-HR-HEALTH-05?,Is the group health insurance limit 10.0 inr under TN-HR-HEALTH-05?,0,tn-hr-health-05_num_neg_0,train
+What is the company policy regarding policy on programming python?,Could you explain the employee guidelines for policy on programming python under TN-HR-DATA?,1,tn-hr-data_pos_4,train
+What is the solving skills entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the solving skills entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_2,train
+What is the foss cit entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the foss cit entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_29,validation
+How does the engineered rule entitlement work at Kaveri Tech Solutions?,Can employees claim engineered rule under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_21_b,calibration
+What is the hosted technical entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the hosted technical entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_34,train
+Do full-time permanent employees qualify for employees also under TN-HR-HEALTH-05?,Do external third-party contractors qualify for employees also under TN-HR-HEALTH-05?,0,tn-hr-health-05_category_neg_2,train
+How does the meal allowance entitlement work at Kaveri Tech Solutions?,Can employees claim meal allowance under policy TN-FIN-TRAVEL-03?,1,tn-fin-travel-03_pos_0_b,validation
+What is the pantry stations entitlement in Chennai Tamil Nadu under TN-HR-MEAL-07?,What is the pantry stations entitlement in London United Kingdom under TN-HR-MEAL-07?,0,tn-hr-meal-07_jurisdiction_neg_4,train
+What is the company policy regarding policy on roles responsibilities?,Could you explain the employee guidelines for policy on roles responsibilities under TN-HR-DATA?,1,tn-hr-data_pos_30,test
+What is the company policy regarding policy on foss cit?,Could you explain the employee guidelines for policy on foss cit under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_29,train
+Do full-time permanent employees qualify for implemented semantic under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for implemented semantic under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_16,validation
+How does the employees also entitlement work at Kaveri Tech Solutions?,Can employees claim employees also under policy TN-HR-HEALTH-05?,1,tn-hr-health-05_pos_2_b,calibration
+What is the travel allowance entitlement in Chennai Tamil Nadu under TN-FIN-TRAVEL-03?,What is the travel allowance entitlement in London United Kingdom under TN-FIN-TRAVEL-03?,0,tn-fin-travel-03_jurisdiction_neg_3,validation
+Do full-time permanent employees qualify for databases mysql under TN-HR-DATA?,Do external third-party contractors qualify for databases mysql under TN-HR-DATA?,0,tn-hr-data_category_neg_7,test
+Do full-time permanent employees qualify for developed full under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for developed full under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_24,train
+What is the company policy regarding policy on business insights?,Could you explain the employee guidelines for policy on business insights under TN-HR-DATA?,1,tn-hr-data_pos_3,train
+Do full-time permanent employees qualify for lakshmi life under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for lakshmi life under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_8,validation
+How does the rdevasri gmail entitlement work at Kaveri Tech Solutions?,Can employees claim rdevasri gmail under policy TN-HR-DATA?,1,tn-hr-data_pos_0_b,calibration
+What is the melinia pitch entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the melinia pitch entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_41,calibration
+Do full-time permanent employees qualify for built document under TN-HR-DATA?,Do external third-party contractors qualify for built document under TN-HR-DATA?,0,tn-hr-data_category_neg_26,validation
+Is the annual leave entitlement limit 18.0 days under TN-HR-LEAVE-01?,Is the annual leave entitlement limit 36.0 days under TN-HR-LEAVE-01?,0,tn-hr-leave-01_num_neg_0,train
+What is the company policy regarding policy on integrated react?,Could you explain the employee guidelines for policy on integrated react under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_11,calibration
+Do full-time permanent employees qualify for gitflow intelligence under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for gitflow intelligence under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_23,train
+Do full-time permanent employees qualify for integrated react under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for integrated react under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_11,train
+Is the foss cit limit 5.0 numeric_value under TN-OPERATIONS-SDE?,Is the foss cit limit 10.0 numeric_value under TN-OPERATIONS-SDE?,0,tn-operations-sde_num_neg_29,validation
+What is the company policy regarding paid maternity leave duration and benefits?,Could you explain the employee guidelines for paid maternity leave duration and benefits under TN-HR-LEAVE-01?,1,tn-hr-leave-01_pos_3,train
+Is the local taxi limit 1.0 inr under TN-FIN-TRAVEL-03?,Is the local taxi limit 2.0 inr under TN-FIN-TRAVEL-03?,0,tn-fin-travel-03_num_neg_2,train
+How does the class venkatalakshmi entitlement work at Kaveri Tech Solutions?,Can employees claim class venkatalakshmi under policy TN-HR-DATA?,1,tn-hr-data_pos_39_b,test
+What is the company policy regarding policy on cashless hospitalization?,Could you explain the employee guidelines for policy on cashless hospitalization under TN-HR-HEALTH-05?,1,tn-hr-health-05_pos_1,train
+How does the foss cit entitlement work at Kaveri Tech Solutions?,Can employees claim foss cit under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_32_b,calibration
+What is the providing centralized entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the providing centralized entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_15,validation
+What is the company policy regarding policy on node express?,Could you explain the employee guidelines for policy on node express under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_5,validation
+What is the company policy regarding policy on foss cit?,Could you explain the employee guidelines for policy on foss cit under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_32,train
+Is the meal allowance limit 2.0 inr under TN-HR-MEAL-07?,Is the meal allowance limit 4.0 inr under TN-HR-MEAL-07?,0,tn-hr-meal-07_num_neg_2,validation
+What is the integrated react entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the integrated react entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_13,calibration
+What is the references handle entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the references handle entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_29,train
+What is the company laptop entitlement in Chennai Tamil Nadu under TN-IT-SEC-04?,What is the company laptop entitlement in London United Kingdom under TN-IT-SEC-04?,0,tn-it-sec-04_jurisdiction_neg_0,train
+What is the company policy regarding campus cafeteria and meal subsidies?,Could you explain the employee guidelines for campus cafeteria and meal subsidies under TN-HR-MEAL-07?,1,tn-hr-meal-07_pos_0,train
+How does the travel allowance entitlement work at Kaveri Tech Solutions?,Can employees claim travel allowance under policy TN-FIN-TRAVEL-03?,1,tn-fin-travel-03_pos_3_b,test
+Do full-time permanent employees qualify for foss cit under TN-HR-DATA?,Do external third-party contractors qualify for foss cit under TN-HR-DATA?,0,tn-hr-data_category_neg_31,calibration
+Do full-time permanent employees qualify for identify equivalent under TN-HR-DATA?,Do external third-party contractors qualify for identify equivalent under TN-HR-DATA?,0,tn-hr-data_category_neg_17,test
+Do full-time permanent employees qualify for supported organization under TN-HR-DATA?,Do external third-party contractors qualify for supported organization under TN-HR-DATA?,0,tn-hr-data_category_neg_36,validation
+How does the professional household entitlement work at Kaveri Tech Solutions?,Can employees claim professional household under policy TN-FIN-RELOC-06?,1,tn-fin-reloc-06_pos_2_b,train
+Do full-time permanent employees qualify for provide grounded under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for provide grounded under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_17,train
+What is the roles responsibilities entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the roles responsibilities entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_30,train
+What is the manage budgeting entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the manage budgeting entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_30,train
+What is the company policy regarding policy on expertise value?,Could you explain the employee guidelines for policy on expertise value under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_3,calibration
+What is the gitflow intelligence entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the gitflow intelligence entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_23,test
+Do full-time permanent employees qualify for sde under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for sde under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_38,validation
+Do full-time permanent employees qualify for foss cit under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for foss cit under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_29,calibration
+Do full-time permanent employees qualify for developed contributed under TN-HR-DATA?,Do external third-party contractors qualify for developed contributed under TN-HR-DATA?,0,tn-hr-data_category_neg_11,validation
+Is the data handling limit 2023.0 numeric_value under TN-IT-SEC-04?,Is the data handling limit 4046.0 numeric_value under TN-IT-SEC-04?,0,tn-it-sec-04_num_neg_2,train
+How does the company laptop entitlement work at Kaveri Tech Solutions?,Can employees claim company laptop under policy TN-IT-SEC-04?,1,tn-it-sec-04_pos_0_b,train
+What is the company policy regarding medical insurance coverage?,Could you explain the employee guidelines for medical insurance coverage under TN-HR-HEALTH-05?,1,tn-hr-health-05_pos_0,train
+Is the sick leave limit 2.0 numeric_value under TN-HR-LEAVE-01?,Is the sick leave limit 4.0 numeric_value under TN-HR-LEAVE-01?,0,tn-hr-leave-01_num_neg_1,validation
+What is the conflict detection entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the conflict detection entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_27,train
+How does the independent contractors entitlement work at Kaveri Tech Solutions?,Can employees claim independent contractors under policy TN-HR-LEAVE-01?,1,tn-hr-leave-01_pos_4_b,train
+Do full-time permanent employees qualify for integrated react under TN-HR-DATA?,Do external third-party contractors qualify for integrated react under TN-HR-DATA?,0,tn-hr-data_category_neg_13,train
+Do full-time permanent employees qualify for implemented nlp under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for implemented nlp under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_26,test
+What is the coordinate team entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the coordinate team entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_31,train
+What is the company policy regarding policy on rdevasri gmail?,Could you explain the employee guidelines for policy on rdevasri gmail under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_0,test
+What is the company policy regarding policy on melinia pitch?,Could you explain the employee guidelines for policy on melinia pitch under TN-HR-DATA?,1,tn-hr-data_pos_41,train
+How does the cgpa semester entitlement work at Kaveri Tech Solutions?,Can employees claim cgpa semester under policy TN-HR-DATA?,1,tn-hr-data_pos_38_b,train
+What is the company policy regarding policy on databases mysql?,Could you explain the employee guidelines for policy on databases mysql under TN-HR-DATA?,1,tn-hr-data_pos_7,train
+How does the formation project entitlement work at Kaveri Tech Solutions?,Can employees claim formation project under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_20_b,train
+Do full-time permanent employees qualify for foss cit under TN-HR-DATA?,Do external third-party contractors qualify for foss cit under TN-HR-DATA?,0,tn-hr-data_category_neg_34,train
+How does the integrated react entitlement work at Kaveri Tech Solutions?,Can employees claim integrated react under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_11_b,train
+What is the company policy regarding policy on solving skills?,Could you explain the employee guidelines for policy on solving skills under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_2,train
+How does the software systems entitlement work at Kaveri Tech Solutions?,Can employees claim software systems under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_1_b,train
+Do full-time permanent employees qualify for data handling under TN-IT-SEC-04?,Do external third-party contractors qualify for data handling under TN-IT-SEC-04?,0,tn-it-sec-04_category_neg_2,test
+Is the relocation grant limit 35.0 inr under TN-FIN-RELOC-06?,Is the relocation grant limit 70.0 inr under TN-FIN-RELOC-06?,0,tn-fin-reloc-06_num_neg_0,train
+How does the manage budgeting entitlement work at Kaveri Tech Solutions?,Can employees claim manage budgeting under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_30_b,test
+What is the company policy regarding IT hardware and company equipment guidelines?,Could you explain the employee guidelines for IT hardware and company equipment guidelines under TN-IT-SEC-04?,1,tn-it-sec-04_pos_0,train
+What is the company policy regarding policy on manage budgeting?,Could you explain the employee guidelines for policy on manage budgeting under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_30,train
+What is the data analysis entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the data analysis entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_5,train
+Do full-time permanent employees qualify for confidence bounds under TN-HR-DATA?,Do external third-party contractors qualify for confidence bounds under TN-HR-DATA?,0,tn-hr-data_category_neg_19,train
+What is the maternity leave entitlement in Chennai Tamil Nadu under TN-HR-LEAVE-01?,What is the maternity leave entitlement in London United Kingdom under TN-HR-LEAVE-01?,0,tn-hr-leave-01_jurisdiction_neg_3,validation
+What is the company policy regarding policy on lakshmi life?,Could you explain the employee guidelines for policy on lakshmi life under TN-HR-DATA?,1,tn-hr-data_pos_10,train
+What is the company policy regarding Privilege or Annual leave days?,Could you explain the employee guidelines for Privilege or Annual leave days under TN-HR-LEAVE-01?,1,tn-hr-leave-01_pos_0,calibration
+How does the features efficient entitlement work at Kaveri Tech Solutions?,Can employees claim features efficient under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_10_b,train
+How does the identifying sales entitlement work at Kaveri Tech Solutions?,Can employees claim identifying sales under policy TN-HR-DATA?,1,tn-hr-data_pos_22_b,train
+Do full-time permanent employees qualify for business insights under TN-HR-DATA?,Do external third-party contractors qualify for business insights under TN-HR-DATA?,0,tn-hr-data_category_neg_3,train
+What is the wholesome breakfast entitlement in Chennai Tamil Nadu under TN-HR-MEAL-07?,What is the wholesome breakfast entitlement in London United Kingdom under TN-HR-MEAL-07?,0,tn-hr-meal-07_jurisdiction_neg_1,train
+Do full-time permanent employees qualify for developed academic under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for developed academic under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_14,validation
+Do full-time permanent employees qualify for annual leave entitlement under TN-HR-LEAVE-01?,Do external third-party contractors qualify for annual leave entitlement under TN-HR-LEAVE-01?,0,tn-hr-leave-01_category_neg_0,train
+How does the developed contributed entitlement work at Kaveri Tech Solutions?,Can employees claim developed contributed under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_9_b,validation
+Do full-time permanent employees qualify for software systems under TN-HR-DATA?,Do external third-party contractors qualify for software systems under TN-HR-DATA?,0,tn-hr-data_category_neg_37,calibration
+Do full-time permanent employees qualify for cafeteria facilities under TN-HR-MEAL-07?,Do external third-party contractors qualify for cafeteria facilities under TN-HR-MEAL-07?,0,tn-hr-meal-07_category_neg_3,train
+How does the company observes entitlement work at Kaveri Tech Solutions?,Can employees claim company observes under policy TN-HR-LEAVE-01?,1,tn-hr-leave-01_pos_2_b,validation
+Do full-time permanent employees qualify for foss cit under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for foss cit under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_32,train
+How does the vehicle counts entitlement work at Kaveri Tech Solutions?,Can employees claim vehicle counts under policy TN-HR-DATA?,1,tn-hr-data_pos_24_b,train
+How does the foss cit entitlement work at Kaveri Tech Solutions?,Can employees claim foss cit under policy TN-HR-DATA?,1,tn-hr-data_pos_25_b,calibration
+Do full-time permanent employees qualify for accessing kaveri under TN-IT-SEC-04?,Do external third-party contractors qualify for accessing kaveri under TN-IT-SEC-04?,0,tn-it-sec-04_category_neg_1,train
+How does the lakshmi life entitlement work at Kaveri Tech Solutions?,Can employees claim lakshmi life under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_8_b,test
+Do full-time permanent employees qualify for meal allowance under TN-HR-MEAL-07?,Do external third-party contractors qualify for meal allowance under TN-HR-MEAL-07?,0,tn-hr-meal-07_category_neg_2,validation
+What is the hotel accommodation entitlement in Chennai Tamil Nadu under TN-FIN-TRAVEL-03?,What is the hotel accommodation entitlement in London United Kingdom under TN-FIN-TRAVEL-03?,0,tn-fin-travel-03_jurisdiction_neg_1,test
+Do full-time permanent employees qualify for company provides under TN-FIN-RELOC-06?,Do external third-party contractors qualify for company provides under TN-FIN-RELOC-06?,0,tn-fin-reloc-06_category_neg_1,train
+Do full-time permanent employees qualify for programming languages under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for programming languages under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_4,calibration
+What is the integrated locally entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the integrated locally entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_28,train
+What is the contributed technical entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the contributed technical entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_35,train
+How does the software systems entitlement work at Kaveri Tech Solutions?,Can employees claim software systems under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_35_b,train
+Do full-time permanent employees qualify for coordinate team under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for coordinate team under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_31,validation
+What is the software systems entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the software systems entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_35,train
+What is the node express entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the node express entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_5,calibration
+What is the company policy regarding policy on integrated locally?,Could you explain the employee guidelines for policy on integrated locally under TN-HR-DATA?,1,tn-hr-data_pos_28,calibration
+How does the gitflow intelligence entitlement work at Kaveri Tech Solutions?,Can employees claim gitflow intelligence under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_23_b,train
+What is the databases mysql entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the databases mysql entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_7,validation
+What is the company policy regarding policy on gitflow intelligence?,Could you explain the employee guidelines for policy on gitflow intelligence under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_23,train
+What is the company policy regarding policy on data handling?,Could you explain the employee guidelines for policy on data handling under TN-IT-SEC-04?,1,tn-it-sec-04_pos_2,train
+Is the cgpa semester limit 8.0 numeric_value under TN-OPERATIONS-SDE?,Is the cgpa semester limit 16.0 numeric_value under TN-OPERATIONS-SDE?,0,tn-operations-sde_num_neg_36,calibration
+How does the references handle entitlement work at Kaveri Tech Solutions?,Can employees claim references handle under policy TN-HR-DATA?,1,tn-hr-data_pos_29_b,train
+What is the company policy regarding policy on machine learning?,Could you explain the employee guidelines for policy on machine learning under TN-HR-DATA?,1,tn-hr-data_pos_8,validation
+Do full-time permanent employees qualify for conflict detection under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for conflict detection under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_27,train
+Do full-time permanent employees qualify for travel allowance under TN-FIN-TRAVEL-03?,Do external third-party contractors qualify for travel allowance under TN-FIN-TRAVEL-03?,0,tn-fin-travel-03_category_neg_3,train
+How does the lakshmi life entitlement work at Kaveri Tech Solutions?,Can employees claim lakshmi life under policy TN-HR-DATA?,1,tn-hr-data_pos_10_b,validation
+What is the company policy regarding policy on pull request?,Could you explain the employee guidelines for policy on pull request under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_25,train
+What is the cgpa semester entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the cgpa semester entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_36,train
+What is the developed inventory entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the developed inventory entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_23,validation
+What is the features efficient entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the features efficient entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_10,train
+What is the development while entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the development while entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_12,train
+How does the group health insurance entitlement work at Kaveri Tech Solutions?,Can employees claim group health insurance under policy TN-HR-HEALTH-05?,1,tn-hr-health-05_pos_0_b,validation
+How does the cgpa semester entitlement work at Kaveri Tech Solutions?,Can employees claim cgpa semester under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_36_b,train
+Do full-time permanent employees qualify for roadmaps featuring under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for roadmaps featuring under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_22,train
+What is the identify equivalent entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the identify equivalent entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_17,train
+Do full-time permanent employees qualify for cleaned analyzed under TN-HR-DATA?,Do external third-party contractors qualify for cleaned analyzed under TN-HR-DATA?,0,tn-hr-data_category_neg_21,train
+Do full-time permanent employees qualify for features efficient under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for features efficient under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_10,train
+What is the company policy regarding policy on two wheeler?,Could you explain the employee guidelines for policy on two wheeler under TN-HR-DATA?,1,tn-hr-data_pos_20,test
+Do full-time permanent employees qualify for melinia pitch under TN-HR-DATA?,Do external third-party contractors qualify for melinia pitch under TN-HR-DATA?,0,tn-hr-data_category_neg_41,validation
+What is the cafeteria facilities entitlement in Chennai Tamil Nadu under TN-HR-MEAL-07?,What is the cafeteria facilities entitlement in London United Kingdom under TN-HR-MEAL-07?,0,tn-hr-meal-07_jurisdiction_neg_0,calibration
+What is the company policy regarding policy on employees also?,Could you explain the employee guidelines for policy on employees also under TN-HR-HEALTH-05?,1,tn-hr-health-05_pos_2,calibration
+How does the software systems entitlement work at Kaveri Tech Solutions?,Can employees claim software systems under policy TN-HR-DATA?,1,tn-hr-data_pos_1_b,train
+How does the conflict detection entitlement work at Kaveri Tech Solutions?,Can employees claim conflict detection under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_27_b,calibration
+Is the hotel accommodation limit 6.0 inr under TN-FIN-TRAVEL-03?,Is the hotel accommodation limit 12.0 inr under TN-FIN-TRAVEL-03?,0,tn-fin-travel-03_num_neg_1,calibration
+What is the data handling entitlement in Chennai Tamil Nadu under TN-IT-SEC-04?,What is the data handling entitlement in London United Kingdom under TN-IT-SEC-04?,0,tn-it-sec-04_jurisdiction_neg_2,validation
+What is the company policy regarding policy on campuscollab react?,Could you explain the employee guidelines for policy on campuscollab react under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_18,train
+How does the confidence bounds entitlement work at Kaveri Tech Solutions?,Can employees claim confidence bounds under policy TN-HR-DATA?,1,tn-hr-data_pos_19_b,train
+How does the dashboard development entitlement work at Kaveri Tech Solutions?,Can employees claim dashboard development under policy TN-HR-DATA?,1,tn-hr-data_pos_2_b,train
+What is the cashless hospitalization entitlement in Chennai Tamil Nadu under TN-HR-HEALTH-05?,What is the cashless hospitalization entitlement in London United Kingdom under TN-HR-HEALTH-05?,0,tn-hr-health-05_jurisdiction_neg_1,test
+Do full-time permanent employees qualify for developed inventory under TN-HR-DATA?,Do external third-party contractors qualify for developed inventory under TN-HR-DATA?,0,tn-hr-data_category_neg_23,train
+What is the company policy regarding policy on software systems?,Could you explain the employee guidelines for policy on software systems under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_1,train
+What is the company policy regarding travel lodging and hotel allowance?,Could you explain the employee guidelines for travel lodging and hotel allowance under TN-FIN-TRAVEL-03?,1,tn-fin-travel-03_pos_1,validation
+Do full-time permanent employees qualify for software systems under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for software systems under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_35,train
+What is the company policy regarding policy on cachemind python?,Could you explain the employee guidelines for policy on cachemind python under TN-HR-DATA?,1,tn-hr-data_pos_15,train
+Do full-time permanent employees qualify for trained calibrated under TN-HR-DATA?,Do external third-party contractors qualify for trained calibrated under TN-HR-DATA?,0,tn-hr-data_category_neg_18,validation
+What is the professional household entitlement in Chennai Tamil Nadu under TN-FIN-RELOC-06?,What is the professional household entitlement in London United Kingdom under TN-FIN-RELOC-06?,0,tn-fin-reloc-06_jurisdiction_neg_2,calibration
+What is the company policy regarding policy on vehicle counts?,Could you explain the employee guidelines for policy on vehicle counts under TN-HR-DATA?,1,tn-hr-data_pos_24,train
+What is the company provides entitlement in Chennai Tamil Nadu under TN-FIN-RELOC-06?,What is the company provides entitlement in London United Kingdom under TN-FIN-RELOC-06?,0,tn-fin-reloc-06_jurisdiction_neg_1,calibration
+What is the company policy regarding policy on integrated react?,Could you explain the employee guidelines for policy on integrated react under TN-HR-DATA?,1,tn-hr-data_pos_13,validation
+What is the company policy regarding policy on developed full?,Could you explain the employee guidelines for policy on developed full under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_24,train
+What is the lakshmi life entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the lakshmi life entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_8,train
+What is the company policy regarding policy on while ensuring?,Could you explain the employee guidelines for policy on while ensuring under TN-HR-DATA?,1,tn-hr-data_pos_14,train
+What is the developed contributed entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the developed contributed entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_9,validation
+How does the sick leave entitlement work at Kaveri Tech Solutions?,Can employees claim sick leave under policy TN-HR-LEAVE-01?,1,tn-hr-leave-01_pos_1_b,train
+Is the sde limit 92.0 numeric_value under TN-OPERATIONS-SDE?,Is the sde limit 184.0 numeric_value under TN-OPERATIONS-SDE?,0,tn-operations-sde_num_neg_38,validation
+Is the data limit 92.0 numeric_value under TN-HR-DATA?,Is the data limit 184.0 numeric_value under TN-HR-DATA?,0,tn-hr-data_num_neg_40,train
+How does the pull request entitlement work at Kaveri Tech Solutions?,Can employees claim pull request under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_25_b,validation
+What is the coordinate members entitlement in Chennai Tamil Nadu under TN-HR-DATA?,What is the coordinate members entitlement in London United Kingdom under TN-HR-DATA?,0,tn-hr-data_jurisdiction_neg_33,test
+What is the developed student entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the developed student entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_19,train
+Do full-time permanent employees qualify for full time under TN-HR-WFH-02?,Do external third-party contractors qualify for full time under TN-HR-WFH-02?,0,tn-hr-wfh-02_category_neg_0,train
+Do full-time permanent employees qualify for roles responsibilities under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for roles responsibilities under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg_28,test
+What is the developed full entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the developed full entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_24,test
+What is the company policy regarding policy on professional household?,Could you explain the employee guidelines for policy on professional household under TN-FIN-RELOC-06?,1,tn-fin-reloc-06_pos_2,validation
+How does the core business entitlement work at Kaveri Tech Solutions?,Can employees claim core business under policy TN-HR-WFH-02?,1,tn-hr-wfh-02_pos_1_b,train
+Do full-time permanent employees qualify for core business under TN-HR-WFH-02?,Do external third-party contractors qualify for core business under TN-HR-WFH-02?,0,tn-hr-wfh-02_category_neg_1,test
+Is the foss cit limit 3.0 numeric_value under TN-HR-DATA?,Is the foss cit limit 6.0 numeric_value under TN-HR-DATA?,0,tn-hr-data_num_neg_34,train
+What is the relocation grant entitlement in Chennai Tamil Nadu under TN-FIN-RELOC-06?,What is the relocation grant entitlement in London United Kingdom under TN-FIN-RELOC-06?,0,tn-fin-reloc-06_jurisdiction_neg_0,validation
+What is the company policy regarding policy on wholesome breakfast?,Could you explain the employee guidelines for policy on wholesome breakfast under TN-HR-MEAL-07?,1,tn-hr-meal-07_pos_1,train
+What is the programming languages entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the programming languages entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_4,validation
+What is the company policy regarding policy on implemented nlp?,Could you explain the employee guidelines for policy on implemented nlp under TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_26,train
+How does the coordinate team entitlement work at Kaveri Tech Solutions?,Can employees claim coordinate team under policy TN-OPERATIONS-SDE?,1,tn-operations-sde_pos_31_b,test
+What is the class venkatalakshmi entitlement in Chennai Tamil Nadu under TN-OPERATIONS-SDE?,What is the class venkatalakshmi entitlement in London United Kingdom under TN-OPERATIONS-SDE?,0,tn-operations-sde_jurisdiction_neg_37,train
+How does the full time entitlement work at Kaveri Tech Solutions?,Can employees claim full time under policy TN-HR-WFH-02?,1,tn-hr-wfh-02_pos_0_b,calibration
+What is the company policy regarding campus cafeteria and meal subsidies?,Could you explain the employee guidelines for campus cafeteria and meal subsidies under TN-HR-MEAL-07?,1,tn-hr-meal-07_pos_3,validation
+Do full-time employees qualify for annual leave entitlement under TN-HR-LEAVE-01?,Do external third-party contractors qualify for annual leave entitlement under TN-HR-LEAVE-01?,0,tn-hr-leave-01_category_neg,train
+Do full-time employees qualify for sick leave under TN-HR-LEAVE-01?,Do external third-party contractors qualify for sick leave under TN-HR-LEAVE-01?,0,tn-hr-leave-01_category_neg,train
+Do full-time employees qualify for company observes under TN-HR-LEAVE-01?,Do external third-party contractors qualify for company observes under TN-HR-LEAVE-01?,0,tn-hr-leave-01_category_neg,train
+Do full-time employees qualify for maternity leave under TN-HR-LEAVE-01?,Do external third-party contractors qualify for maternity leave under TN-HR-LEAVE-01?,0,tn-hr-leave-01_category_neg,train
+Do full-time employees qualify for independent contractors under TN-HR-LEAVE-01?,Do external third-party contractors qualify for independent contractors under TN-HR-LEAVE-01?,0,tn-hr-leave-01_category_neg,train
+Do full-time employees qualify for full time under TN-HR-WFH-02?,Do external third-party contractors qualify for full time under TN-HR-WFH-02?,0,tn-hr-wfh-02_category_neg,train
+Do full-time employees qualify for core business under TN-HR-WFH-02?,Do external third-party contractors qualify for core business under TN-HR-WFH-02?,0,tn-hr-wfh-02_category_neg,train
+Do full-time employees qualify for hybrid working under TN-HR-WFH-02?,Do external third-party contractors qualify for hybrid working under TN-HR-WFH-02?,0,tn-hr-wfh-02_category_neg,train
+Do full-time employees qualify for meal allowance under TN-FIN-TRAVEL-03?,Do external third-party contractors qualify for meal allowance under TN-FIN-TRAVEL-03?,0,tn-fin-travel-03_category_neg,train
+Do full-time employees qualify for hotel accommodation under TN-FIN-TRAVEL-03?,Do external third-party contractors qualify for hotel accommodation under TN-FIN-TRAVEL-03?,0,tn-fin-travel-03_category_neg,train
+Do full-time employees qualify for local taxi under TN-FIN-TRAVEL-03?,Do external third-party contractors qualify for local taxi under TN-FIN-TRAVEL-03?,0,tn-fin-travel-03_category_neg,train
+Do full-time employees qualify for travel allowance under TN-FIN-TRAVEL-03?,Do external third-party contractors qualify for travel allowance under TN-FIN-TRAVEL-03?,0,tn-fin-travel-03_category_neg,train
+Do full-time employees qualify for company laptop under TN-IT-SEC-04?,Do external third-party contractors qualify for company laptop under TN-IT-SEC-04?,0,tn-it-sec-04_category_neg,train
+Do full-time employees qualify for accessing kaveri under TN-IT-SEC-04?,Do external third-party contractors qualify for accessing kaveri under TN-IT-SEC-04?,0,tn-it-sec-04_category_neg,train
+Do full-time employees qualify for data handling under TN-IT-SEC-04?,Do external third-party contractors qualify for data handling under TN-IT-SEC-04?,0,tn-it-sec-04_category_neg,train
+Do full-time employees qualify for group health insurance under TN-HR-HEALTH-05?,Do external third-party contractors qualify for group health insurance under TN-HR-HEALTH-05?,0,tn-hr-health-05_category_neg,train
+Do full-time employees qualify for cashless hospitalization under TN-HR-HEALTH-05?,Do external third-party contractors qualify for cashless hospitalization under TN-HR-HEALTH-05?,0,tn-hr-health-05_category_neg,train
+Do full-time employees qualify for employees also under TN-HR-HEALTH-05?,Do external third-party contractors qualify for employees also under TN-HR-HEALTH-05?,0,tn-hr-health-05_category_neg,train
+Do full-time employees qualify for relocation grant under TN-FIN-RELOC-06?,Do external third-party contractors qualify for relocation grant under TN-FIN-RELOC-06?,0,tn-fin-reloc-06_category_neg,train
+Do full-time employees qualify for company provides under TN-FIN-RELOC-06?,Do external third-party contractors qualify for company provides under TN-FIN-RELOC-06?,0,tn-fin-reloc-06_category_neg,train
+Do full-time employees qualify for professional household under TN-FIN-RELOC-06?,Do external third-party contractors qualify for professional household under TN-FIN-RELOC-06?,0,tn-fin-reloc-06_category_neg,train
+Do full-time employees qualify for cafeteria facilities under TN-HR-MEAL-07?,Do external third-party contractors qualify for cafeteria facilities under TN-HR-MEAL-07?,0,tn-hr-meal-07_category_neg,train
+Do full-time employees qualify for wholesome breakfast under TN-HR-MEAL-07?,Do external third-party contractors qualify for wholesome breakfast under TN-HR-MEAL-07?,0,tn-hr-meal-07_category_neg,train
+Do full-time employees qualify for meal allowance under TN-HR-MEAL-07?,Do external third-party contractors qualify for meal allowance under TN-HR-MEAL-07?,0,tn-hr-meal-07_category_neg,train
+Do full-time employees qualify for cafeteria facilities under TN-HR-MEAL-07?,Do external third-party contractors qualify for cafeteria facilities under TN-HR-MEAL-07?,0,tn-hr-meal-07_category_neg,train
+Do full-time employees qualify for pantry stations under TN-HR-MEAL-07?,Do external third-party contractors qualify for pantry stations under TN-HR-MEAL-07?,0,tn-hr-meal-07_category_neg,train
+Do full-time employees qualify for rdevasri gmail under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for rdevasri gmail under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg,train
+Do full-time employees qualify for software systems under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for software systems under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg,train
+Do full-time employees qualify for solving skills under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for solving skills under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg,train
+Do full-time employees qualify for expertise value under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for expertise value under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg,train
+Do full-time employees qualify for programming languages under TN-OPERATIONS-SDE?,Do external third-party contractors qualify for programming languages under TN-OPERATIONS-SDE?,0,tn-operations-sde_category_neg,train
+Do full-time employees qualify for rdevasri gmail under TN-HR-DATA?,Do external third-party contractors qualify for rdevasri gmail under TN-HR-DATA?,0,tn-hr-data_category_neg,train
+Do full-time employees qualify for software systems under TN-HR-DATA?,Do external third-party contractors qualify for software systems under TN-HR-DATA?,0,tn-hr-data_category_neg,train
+Do full-time employees qualify for dashboard development under TN-HR-DATA?,Do external third-party contractors qualify for dashboard development under TN-HR-DATA?,0,tn-hr-data_category_neg,train
+Do full-time employees qualify for business insights under TN-HR-DATA?,Do external third-party contractors qualify for business insights under TN-HR-DATA?,0,tn-hr-data_category_neg,train
+Do full-time employees qualify for programming python under TN-HR-DATA?,Do external third-party contractors qualify for programming python under TN-HR-DATA?,0,tn-hr-data_category_neg,train
+What is the company policy regarding policy on coimbatore institute?,Could you explain the employee guidelines for policy on coimbatore institute under TN-HR-NETWORK-DOCU?,1,tn-hr-network-docu_positive_pair,train
+Is the coimbatore institute limit 641.0 numeric_value under TN-HR-NETWORK-DOCU?,Is the coimbatore institute limit 1282.0 numeric_value under TN-HR-NETWORK-DOCU?,0,tn-hr-network-docu_numeric_neg,train
+Do full-time employees qualify for coimbatore institute under TN-HR-NETWORK-DOCU?,Do external third-party contractors qualify for coimbatore institute under TN-HR-NETWORK-DOCU?,0,tn-hr-network-docu_category_neg,train
+What is the company policy regarding policy on government aided?,Could you explain the employee guidelines for policy on government aided under TN-HR-NETWORK-DOCU?,1,tn-hr-network-docu_positive_pair,train
+Do full-time employees qualify for government aided under TN-HR-NETWORK-DOCU?,Do external third-party contractors qualify for government aided under TN-HR-NETWORK-DOCU?,0,tn-hr-network-docu_category_neg,train
+What is the company policy regarding policy on department computing?,Could you explain the employee guidelines for policy on department computing under TN-HR-NETWORK-DOCU?,1,tn-hr-network-docu_positive_pair,train
+Do full-time employees qualify for department computing under TN-HR-NETWORK-DOCU?,Do external third-party contractors qualify for department computing under TN-HR-NETWORK-DOCU?,0,tn-hr-network-docu_category_neg,train
+What is the company policy regarding policy on iii year?,Could you explain the employee guidelines for policy on iii year under TN-HR-NETWORK-DOCU?,1,tn-hr-network-docu_positive_pair,train
+Do full-time employees qualify for iii year under TN-HR-NETWORK-DOCU?,Do external third-party contractors qualify for iii year under TN-HR-NETWORK-DOCU?,0,tn-hr-network-docu_category_neg,train
+What is the company policy regarding policy on mss computer?,Could you explain the employee guidelines for policy on mss computer under TN-HR-NETWORK-DOCU?,1,tn-hr-network-docu_positive_pair,train
+Do full-time employees qualify for mss computer under TN-HR-NETWORK-DOCU?,Do external third-party contractors qualify for mss computer under TN-HR-NETWORK-DOCU?,0,tn-hr-network-docu_category_neg,train
+What is the company policy regarding policy on coimbatore india?,Could you explain the employee guidelines for policy on coimbatore india under TN-HR-ADARSH-S-HIT?,1,tn-hr-adarsh-s-hit_positive_pair,train
+Is the coimbatore india limit 91.0 numeric_value under TN-HR-ADARSH-S-HIT?,Is the coimbatore india limit 182.0 numeric_value under TN-HR-ADARSH-S-HIT?,0,tn-hr-adarsh-s-hit_numeric_neg,train
+Do full-time employees qualify for coimbatore india under TN-HR-ADARSH-S-HIT?,Do external third-party contractors qualify for coimbatore india under TN-HR-ADARSH-S-HIT?,0,tn-hr-adarsh-s-hit_category_neg,train
+What is the company policy regarding policy on software systems?,Could you explain the employee guidelines for policy on software systems under TN-HR-ADARSH-S-HIT?,1,tn-hr-adarsh-s-hit_positive_pair,train
+Do full-time employees qualify for software systems under TN-HR-ADARSH-S-HIT?,Do external third-party contractors qualify for software systems under TN-HR-ADARSH-S-HIT?,0,tn-hr-adarsh-s-hit_category_neg,train
+What is the company policy regarding policy on rag pipelines?,Could you explain the employee guidelines for policy on rag pipelines under TN-HR-ADARSH-S-HIT?,1,tn-hr-adarsh-s-hit_positive_pair,train
+Do full-time employees qualify for rag pipelines under TN-HR-ADARSH-S-HIT?,Do external third-party contractors qualify for rag pipelines under TN-HR-ADARSH-S-HIT?,0,tn-hr-adarsh-s-hit_category_neg,train
+What is the company policy regarding policy on into production?,Could you explain the employee guidelines for policy on into production under TN-HR-ADARSH-S-HIT?,1,tn-hr-adarsh-s-hit_positive_pair,train
+Do full-time employees qualify for into production under TN-HR-ADARSH-S-HIT?,Do external third-party contractors qualify for into production under TN-HR-ADARSH-S-HIT?,0,tn-hr-adarsh-s-hit_category_neg,train
+What is the company policy regarding policy on programming big?,Could you explain the employee guidelines for policy on programming big under TN-HR-ADARSH-S-HIT?,1,tn-hr-adarsh-s-hit_positive_pair,train
+Do full-time employees qualify for programming big under TN-HR-ADARSH-S-HIT?,Do external third-party contractors qualify for programming big under TN-HR-ADARSH-S-HIT?,0,tn-hr-adarsh-s-hit_category_neg,train
+What is the company policy regarding paid paternity leave duration?,Could you explain the employee guidelines for paid paternity leave duration under TN-HR-PATERNITY-99?,1,tn-hr-paternity-99_positive_pair,train
+Is the paternity leave limit 1.0 numeric_value under TN-HR-PATERNITY-99?,Is the paternity leave limit 2.0 numeric_value under TN-HR-PATERNITY-99?,0,tn-hr-paternity-99_numeric_neg,train
+Do full-time employees qualify for paternity leave under TN-HR-PATERNITY-99?,Do external third-party contractors qualify for paternity leave under TN-HR-PATERNITY-99?,0,tn-hr-paternity-99_category_neg,train
+What is the company policy regarding paid paternity leave duration?,Could you explain the employee guidelines for paid paternity leave duration under TN-HR-PATERNITY-99?,1,tn-hr-paternity-99_positive_pair,train
+Is the paternity leave limit 10.0 days under TN-HR-PATERNITY-99?,Is the paternity leave limit 20.0 days under TN-HR-PATERNITY-99?,0,tn-hr-paternity-99_numeric_neg,train
+Do full-time employees qualify for paternity leave under TN-HR-PATERNITY-99?,Do external third-party contractors qualify for paternity leave under TN-HR-PATERNITY-99?,0,tn-hr-paternity-99_category_neg,train
+What is the company policy regarding business travel and daily per diem?,Could you explain the employee guidelines for business travel and daily per diem under TN-TEST-GRANULAR-01?,1,tn-test-granular-01_positive_pair,train
+Is the travel allowance limit 1.0 numeric_value under TN-TEST-GRANULAR-01?,Is the travel allowance limit 2.0 numeric_value under TN-TEST-GRANULAR-01?,0,tn-test-granular-01_numeric_neg,train
+Do full-time employees qualify for travel allowance under TN-TEST-GRANULAR-01?,Do external third-party contractors qualify for travel allowance under TN-TEST-GRANULAR-01?,0,tn-test-granular-01_category_neg,train
+What is the company policy regarding business travel and daily per diem?,Could you explain the employee guidelines for business travel and daily per diem under TN-TEST-GRANULAR-01?,1,tn-test-granular-01_positive_pair,train
+Is the travel allowance limit 3500.0 inr under TN-TEST-GRANULAR-01?,Is the travel allowance limit 7000.0 inr under TN-TEST-GRANULAR-01?,0,tn-test-granular-01_numeric_neg,train
+Do full-time employees qualify for travel allowance under TN-TEST-GRANULAR-01?,Do external third-party contractors qualify for travel allowance under TN-TEST-GRANULAR-01?,0,tn-test-granular-01_category_neg,train
+What is the company policy regarding policy on section mobile?,Could you explain the employee guidelines for policy on section mobile under TN-TEST-GRANULAR-01?,1,tn-test-granular-01_positive_pair,train
+Is the section mobile limit 2.0 numeric_value under TN-TEST-GRANULAR-01?,Is the section mobile limit 4.0 numeric_value under TN-TEST-GRANULAR-01?,0,tn-test-granular-01_numeric_neg,train
+Do full-time employees qualify for section mobile under TN-TEST-GRANULAR-01?,Do external third-party contractors qualify for section mobile under TN-TEST-GRANULAR-01?,0,tn-test-granular-01_category_neg,train
+What is the company policy regarding policy on employees eligible?,Could you explain the employee guidelines for policy on employees eligible under TN-TEST-GRANULAR-01?,1,tn-test-granular-01_positive_pair,train
+Is the employees eligible limit 1500.0 inr under TN-TEST-GRANULAR-01?,Is the employees eligible limit 3000.0 inr under TN-TEST-GRANULAR-01?,0,tn-test-granular-01_numeric_neg,train
+Do full-time employees qualify for employees eligible under TN-TEST-GRANULAR-01?,Do external third-party contractors qualify for employees eligible under TN-TEST-GRANULAR-01?,0,tn-test-granular-01_category_neg,train
+What is the company policy regarding policy on section core?,Could you explain the employee guidelines for policy on section core under TN-TEST-RENAME-01?,1,tn-test-rename-01_positive_pair,train
+Is the section core limit 1.0 numeric_value under TN-TEST-RENAME-01?,Is the section core limit 2.0 numeric_value under TN-TEST-RENAME-01?,0,tn-test-rename-01_numeric_neg,train
+Do full-time employees qualify for section core under TN-TEST-RENAME-01?,Do external third-party contractors qualify for section core under TN-TEST-RENAME-01?,0,tn-test-rename-01_category_neg,train
+What is the company policy regarding standard business hours and shift schedules?,Could you explain the employee guidelines for standard business hours and shift schedules under TN-TEST-RENAME-01?,1,tn-test-rename-01_positive_pair,train
+Is the office working hours limit 10.0 numeric_value under TN-TEST-RENAME-01?,Is the office working hours limit 20.0 numeric_value under TN-TEST-RENAME-01?,0,tn-test-rename-01_numeric_neg,train
+Do full-time employees qualify for office working hours under TN-TEST-RENAME-01?,Do external third-party contractors qualify for office working hours under TN-TEST-RENAME-01?,0,tn-test-rename-01_category_neg,train

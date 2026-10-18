@@ -42,7 +42,7 @@ def extract_policy_conditions(text: str, default_domain: Optional[str] = None) -
         conditions.domain = "GENERAL"
 
     # 2. Jurisdiction extraction (using word boundaries)
-    if re.search(r'\b(india|inr|rupees|bangalore|mumbai|delhi|hyderabad)\b', clean):
+    if re.search(r'\b(india|inr|rupees|tamil nadu|tamilnadu|chennai|coimbatore|madurai|trichy|salem|bangalore|mumbai|delhi|hyderabad)\b', clean):
         conditions.jurisdiction = "INDIA"
     elif re.search(r'\b(united states|usa|us|u\.s\.|dollar|usd|\$)\b', clean) or '$' in clean:
         conditions.jurisdiction = "US"

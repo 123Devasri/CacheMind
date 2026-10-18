@@ -86,8 +86,8 @@ def evaluate_threshold_candidates(
             # Filter candidates that achieve the minimum observed FHR
             min_fhr = min(r["observed_fhr"] for r in valid_candidates)
             best_candidates = [r for r in valid_candidates if abs(r["observed_fhr"] - min_fhr) < 1e-5]
-            # Select the median/accessible threshold among the best (defaulting around 0.60)
-            selected_tau = min(best_candidates, key=lambda x: abs(x["threshold"] - 0.60))["threshold"]
+            # Select the median/accessible threshold among the best (defaulting around 0.50)
+            selected_tau = min(best_candidates, key=lambda x: abs(x["threshold"] - 0.50))["threshold"]
         else:
             selected_tau = conservative_fallback
 

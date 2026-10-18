@@ -1,9 +1,11 @@
 import time
+import uuid
+import datetime
 from typing import Optional, Dict, Any, List
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.models.entities import CachedEntry, QueryAuditLog, ThresholdEvaluationRun
+from app.models.entities import CachedEntry, QueryAuditLog, ThresholdEvaluationRun, Policy, InsufficientDataQuestion
 from app.ml.embeddings import embedding_service
 from app.ml.faiss_index import faiss_service
 from app.ml.policy_validation import extract_policy_conditions, validate_condition_safety, normalize_text
@@ -27,8 +29,8 @@ class CacheDecisionPipeline:
     10. Compare with active statistical threshold.
     11. Final verification checks.
     12. Return verified cached answer if all checks pass.
-    13. Otherwise invoke LLM fallback / local mock.
-    14. Persist comprehensive audit log.
+    13. Otherwise invoke extractive policy-grounded fallback.
+    14. Persist comprehensive audit log with user and session tracking.
     """
     def __init__(self):
         pass
@@ -43,20 +45,98 @@ class CacheDecisionPipeline:
         self,
         db: Session,
         query: str,
-        domain_filter: Optional[str] = None
+        domain_filter: Optional[str] = None,
+        user_id: Optional[str] = None,
+        conversation_id: Optional[str] = None
     ) -> Dict[str, Any]:
         start_time = time.perf_counter()
         lookup_start = start_time
+        request_id = str(uuid.uuid4())
+        active_threshold = self.get_active_threshold(db)
+
+        # Step 0: Prompt & Question Optimization (Acronym expansion & Naive Bayes domain classification)
+        from app.ml.query_optimizer import optimize_user_query
+        opt_info = optimize_user_query(query)
+
+        if opt_info.get("is_pure_greeting"):
+            tot_lat = round((time.perf_counter() - start_time) * 1000.0, 2)
+            greeting_answer = "Hello! I am your Enterprise Policy AI Assistant. How can I assist you with corporate policies today?"
+            audit_log = QueryAuditLog(
+                request_id=request_id,
+                query_category="GREETING",
+                user_id=user_id,
+                conversation_id=conversation_id,
+                query_text=query,
+                domain_filter=domain_filter,
+                decision="GREETING",
+                rejection_reasons=[],
+                returned_answer=greeting_answer,
+                is_cached_result=True,
+                provider_used="prompt_optimizer",
+                applied_threshold=active_threshold,
+                lookup_latency_ms=0.5,
+                total_latency_ms=tot_lat,
+                grok_invoked=False,
+                prompt_tokens=0,
+                completion_tokens=0,
+                total_tokens=0,
+                estimated_cost_usd=0.0,
+                supporting_evidence_references=[],
+                validation_status="passed"
+            )
+            db.add(audit_log)
+            db.commit()
+
+            return {
+                "query": query,
+                "decision": "GREETING",
+                "answer": greeting_answer,
+                "is_cached": True,
+                "provider_used": "prompt_optimizer",
+                "rejection_reasons": [],
+                "candidate": None,
+                "active_threshold": active_threshold,
+                "lookup_latency_ms": 0.5,
+                "total_latency_ms": tot_lat,
+                "log_id": audit_log.id,
+                "policy_id": None,
+                "policy_version": None,
+                "source_citation": None,
+                "source_document": None,
+                "grok_invoked": False,
+                "tokens_used": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+                "supporting_evidence_references": [],
+                "validation_status": "passed",
+                "estimated_cost_usd": 0.0
+            }
+
+        effective_query = opt_info.get("optimized_query", query)
+        effective_domain = domain_filter or opt_info.get("predicted_domain")
 
         # Step 1: Validate & normalize
-        norm_query = normalize_text(query)
+        norm_query = normalize_text(effective_query)
         if not norm_query:
             return {
+                "query": query,
                 "decision": "REJECTED_EMPTY_QUERY",
                 "answer": "Query cannot be empty.",
                 "is_cached": False,
-                "reasons": ["Empty query string provided."],
-                "latency_ms": 0.0
+                "provider_used": "validation_guard",
+                "rejection_reasons": ["Empty query string provided."],
+                "candidate": None,
+                "active_threshold": active_threshold,
+                "lookup_latency_ms": 0.0,
+                "total_latency_ms": 0.0,
+                "log_id": None,
+                "policy_id": None,
+                "policy_version": None,
+                "source_citation": None,
+                "source_document": None,
+                "grok_invoked": False,
+                "tokens_used": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+                "supporting_evidence_references": [],
+                "validation_status": "rejected",
+                "estimated_cost_usd": 0.0
             }
 
         # Step 2: Extract conditions
@@ -95,6 +175,12 @@ class CacheDecisionPipeline:
                 # Must be verified
                 if not cand_db.is_verified:
                     rejection_reasons.append(f"Candidate {cand_db.id} is marked unverified.")
+                    continue
+
+                # Check if referenced policy document is active and not obsolete
+                pol_rec = db.query(Policy).filter(Policy.policy_id == cand_db.policy_id).first()
+                if pol_rec and (getattr(pol_rec, "status", "active") == "obsolete"):
+                    rejection_reasons.append(f"Referenced policy {cand_db.policy_id} is marked obsolete.")
                     continue
 
                 # Step 6: Deterministic condition safety
@@ -155,45 +241,209 @@ class CacheDecisionPipeline:
                 db.commit()
                 break
 
-        # Step 12 or 13: Final answer & Fallback
+        # Step 12 or 13: Final answer & Grounded Fallback
         total_latency_ms = (time.perf_counter() - start_time) * 1000.0
+        grok_invoked = False
+        tokens_used = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+        estimated_cost_usd = 0.0
+        supporting_evidence_references = []
+        validation_status = "passed"
         
         if chosen_hit:
             decision = "HIT"
             returned_answer = chosen_hit.answer
+            if isinstance(returned_answer, str):
+                returned_answer = returned_answer.replace('\u202f', ' ').replace('\xa0', ' ').replace('\u200b', '')
             is_cached = True
             provider_used = "cache"
+            grok_invoked = False
+            estimated_cost_usd = settings.CACHE_HIT_UNIT_COST
+            
+            pol_obj = db.query(Policy).filter(Policy.policy_id == chosen_hit.policy_id).first()
+            policy_id = chosen_hit.policy_id
+            policy_version = chosen_hit.policy_version
+            source_document = pol_obj.name if pol_obj else f"Policy {chosen_hit.policy_id}"
+            source_citation = chosen_hit.source_citation or f"Policy {chosen_hit.policy_id} (Version {chosen_hit.policy_version}) - Jurisdiction: {chosen_hit.jurisdiction}, Scope: {chosen_hit.employee_category}"
+            source_section_ids = chosen_hit.source_section_ids or []
+            supporting_evidence_references = [source_citation]
         else:
-            decision = "CACHE_MISS"
-            is_cached = False
-            fallback_res = llm_service.generate_response(query, domain=domain_filter)
+            fallback_res = llm_service.generate_response(db=db, query=query, domain=domain_filter)
+            has_sufficient = fallback_res.get("has_sufficient_evidence", True)
             returned_answer = fallback_res["answer"]
-            provider_used = fallback_res["provider"]
+            if isinstance(returned_answer, str):
+                returned_answer = returned_answer.replace('\u202f', ' ').replace('\xa0', ' ').replace('\u200b', '')
+            provider_used = fallback_res.get("provider", "grounded_company_policy_engine")
+            policy_id = fallback_res.get("policy_id")
+            policy_version = fallback_res.get("policy_version")
+            source_citation = fallback_res.get("source_citation")
+            source_document = fallback_res.get("source_document")
+            source_section_ids = fallback_res.get("source_section_ids", [])
+            source_content_hashes = fallback_res.get("source_content_hashes", {})
+            retrieval_status = fallback_res.get("retrieval_status", "ANSWERED" if has_sufficient else "INSUFFICIENT_EVIDENCE")
+            confidence_score = fallback_res.get("confidence_score", 0.0)
+            insufficient_reason = fallback_res.get("insufficient_reason")
+            grok_invoked = fallback_res.get("grok_invoked", False)
+            tokens_used = fallback_res.get("tokens_used", {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0})
+            estimated_cost_usd = fallback_res.get("estimated_cost_usd", settings.DEFAULT_LLM_QUERY_COST if grok_invoked else 0.0)
+            supporting_evidence_references = fallback_res.get("supporting_evidence_references", [])
+            validation_status = fallback_res.get("validation_status", "passed" if has_sufficient else "insufficient_evidence")
             total_latency_ms = (time.perf_counter() - start_time) * 1000.0
 
-        # Step 14: Persist Audit Log
+            gap_record = None
+            if retrieval_status == "DOCUMENT_CONFLICT":
+                decision = "DOCUMENT_CONFLICT"
+                is_cached = False
+                validation_status = "conflict"
+            elif not has_sufficient or policy_id is None or retrieval_status == "INSUFFICIENT_EVIDENCE":
+                decision = "INSUFFICIENT_EVIDENCE"
+                is_cached = False
+                validation_status = "insufficient_evidence"
+                if not returned_answer or not str(returned_answer).strip():
+                    returned_answer = "The available corporate policy documents do not contain sufficient evidence to answer this question. Please contact HR or Policy Administration for assistance."
+            else:
+                decision = "CACHE_MISS"
+                is_cached = False
+
+                # Dynamic Write-on-Miss: automatically remember grounded policy answers
+                # Only cache if evidence is verified, policy exists, and conditions match
+                if (
+                    policy_id
+                    and returned_answer
+                    and not returned_answer.startswith("According to Kaveri Tech Solutions")
+                    and not returned_answer.startswith("The available corporate policy")
+                    and not returned_answer.startswith("No company policy")
+                    and validation_status == "passed"
+                ):
+                    try:
+                        existing_entry = db.query(CachedEntry).filter(
+                            CachedEntry.normalized_question == norm_query,
+                            CachedEntry.is_active == True
+                        ).first()
+
+                        if existing_entry:
+                            if (
+                                existing_entry.faiss_id is None
+                                or existing_entry.faiss_id not in faiss_service.id_map
+                                or existing_entry.faiss_id >= faiss_service.total_vectors()
+                            ):
+                                emb = embedding_service.encode(norm_query, normalize=True)
+                                existing_entry.faiss_id = faiss_service.add_vector(existing_entry.id, emb)
+                                db.commit()
+                        else:
+                            pol_rec = db.query(Policy).filter(Policy.policy_id == policy_id).first()
+                            new_entry = CachedEntry(
+                                question=effective_query,
+                                normalized_question=norm_query,
+                                answer=returned_answer,
+                                policy_id=policy_id,
+                                policy_version=policy_version or (pol_rec.current_version if pol_rec else "1.0"),
+                                domain=effective_domain or (pol_rec.domain if pol_rec else "HR"),
+                                jurisdiction=pol_rec.jurisdiction if pol_rec else "INDIA",
+                                employee_category=pol_rec.employee_category if pol_rec else "ALL",
+                                numerical_limits=extract_policy_conditions(norm_query).numerical_limits,
+                                source_section_ids=source_section_ids,
+                                source_content_hashes=source_content_hashes,
+                                source_citation=source_citation,
+                                last_validated_at=datetime.datetime.utcnow(),
+                                is_verified=True,
+                                is_active=True,
+                                hit_count=0
+                            )
+                            db.add(new_entry)
+                            db.commit()
+                            db.refresh(new_entry)
+
+                            # Immediately encode and index into FAISS
+                            emb = embedding_service.encode(norm_query, normalize=True)
+                            new_entry.faiss_id = faiss_service.add_vector(new_entry.id, emb)
+                            db.commit()
+                    except Exception as ex:
+                        print(f"Warning: Auto-cache on miss error: {ex}")
+                        db.rollback()
+
+            # Record in InsufficientDataQuestion if genuine policy gap
+            if decision in ["INSUFFICIENT_EVIDENCE", "DOCUMENT_CONFLICT"]:
+                try:
+                    existing_gap = db.query(InsufficientDataQuestion).filter(
+                        InsufficientDataQuestion.normalized_query == norm_query
+                    ).first()
+
+                    if existing_gap:
+                        existing_gap.occurrence_count += 1
+                        existing_gap.last_asked_at = datetime.datetime.utcnow()
+                        existing_gap.confidence_score = confidence_score
+                        existing_gap.reason = insufficient_reason or existing_gap.reason
+                        existing_gap.retrieval_status = decision
+                        if existing_gap.status == "RESOLVED":
+                            existing_gap.status = "PENDING"
+                        db.commit()
+                        gap_record = existing_gap
+                    else:
+                        new_gap = InsufficientDataQuestion(
+                            request_id=request_id,
+                            query_text=query,
+                            normalized_query=norm_query,
+                            user_id=user_id,
+                            policy_scope=effective_domain or (policy_id if policy_id else "ALL"),
+                            retrieval_status=decision,
+                            reason=insufficient_reason or "No relevant evidence found in uploaded policy documents.",
+                            confidence_score=confidence_score,
+                            occurrence_count=1,
+                            status="PENDING",
+                            first_asked_at=datetime.datetime.utcnow(),
+                            last_asked_at=datetime.datetime.utcnow()
+                        )
+                        db.add(new_gap)
+                        db.commit()
+                        db.refresh(new_gap)
+                        gap_record = new_gap
+                except Exception as gap_ex:
+                    print(f"Warning: Failed to record InsufficientDataQuestion: {gap_ex}")
+                    db.rollback()
+
+        # Step 14: Persist Comprehensive Audit Log
         audit_log = QueryAuditLog(
+            request_id=request_id,
+            query_category="POLICY",
+            user_id=user_id,
+            conversation_id=conversation_id,
             query_text=query,
             domain_filter=domain_filter,
             decision=decision,
             rejection_reasons=rejection_reasons,
-            candidate_cache_id=best_candidate_info["cache_id"] if best_candidate_info else None,
-            candidate_faiss_id=best_candidate_info["faiss_id"] if best_candidate_info else None,
-            candidate_question=best_candidate_info["question"] if best_candidate_info else None,
+            candidate_cache_id=chosen_hit.id if chosen_hit else (best_candidate_info["cache_id"] if best_candidate_info else None),
+            candidate_faiss_id=chosen_hit.faiss_id if chosen_hit else (best_candidate_info["faiss_id"] if best_candidate_info else None),
+            candidate_question=chosen_hit.question if chosen_hit else (best_candidate_info["question"] if best_candidate_info else None),
             cosine_similarity=best_candidate_info["cosine_similarity"] if best_candidate_info else None,
             classifier_score=best_candidate_info["classifier_score"] if best_candidate_info else None,
             calibrated_probability=best_candidate_info["calibrated_probability"] if best_candidate_info else None,
             applied_threshold=active_threshold,
             policy_condition_passed=best_candidate_info["policy_condition_passed"] if best_candidate_info else False,
             condition_mismatches=best_candidate_info["condition_mismatches"] if best_candidate_info else [],
+            policy_id=policy_id,
+            policy_version=policy_version,
+            source_section_ids=source_section_ids if 'source_section_ids' in locals() else [],
+            source_citation=source_citation,
+            source_document=source_document,
             returned_answer=returned_answer,
             is_cached_result=is_cached,
             provider_used=provider_used,
+            grok_invoked=grok_invoked,
+            prompt_tokens=tokens_used.get("prompt_tokens", 0),
+            completion_tokens=tokens_used.get("completion_tokens", 0),
+            total_tokens=tokens_used.get("total_tokens", 0),
+            estimated_cost_usd=round(float(estimated_cost_usd), 6),
+            supporting_evidence_references=supporting_evidence_references,
+            validation_status=validation_status,
             lookup_latency_ms=round(lookup_latency_ms, 2),
             total_latency_ms=round(total_latency_ms, 2)
         )
         db.add(audit_log)
         db.commit()
+
+        if 'gap_record' in locals() and gap_record and gap_record.log_id is None:
+            gap_record.log_id = audit_log.id
+            db.commit()
 
         return {
             "query": query,
@@ -206,7 +456,16 @@ class CacheDecisionPipeline:
             "active_threshold": active_threshold,
             "lookup_latency_ms": round(lookup_latency_ms, 2),
             "total_latency_ms": round(total_latency_ms, 2),
-            "log_id": audit_log.id
+            "log_id": audit_log.id,
+            "policy_id": policy_id,
+            "policy_version": policy_version,
+            "source_citation": source_citation,
+            "source_document": source_document,
+            "grok_invoked": grok_invoked,
+            "tokens_used": tokens_used,
+            "supporting_evidence_references": supporting_evidence_references,
+            "validation_status": validation_status,
+            "estimated_cost_usd": round(float(estimated_cost_usd), 6)
         }
 
 cache_pipeline = CacheDecisionPipeline()

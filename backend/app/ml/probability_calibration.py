@@ -64,7 +64,7 @@ class ProbabilityCalibrationService:
         }
 
         settings.MODELS_DIR.mkdir(parents=True, exist_ok=True)
-        joblib.dump(self.calibrator, self.model_path)
+        joblib.dump(self.calibrator, str(self.model_path))
         with open(self.meta_path, "w", encoding="utf-8") as f:
             json.dump(self.metadata, f, indent=2)
 

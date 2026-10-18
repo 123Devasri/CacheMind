@@ -1,0 +1,45 @@
+{
+  "acronyms": {
+    "wfh": "work from home",
+    "pto": "paid time off",
+    "pl": "privilege leave",
+    "al": "annual leave",
+    "cl": "casual leave",
+    "sl": "sick leave",
+    "ml": "maternity leave",
+    "pat": "paternity leave",
+    "pf": "provident fund",
+    "esi": "employee state insurance",
+    "byod": "bring your own device",
+    "vpn": "virtual private network",
+    "nda": "non-disclosure agreement",
+    "ctc": "cost to company",
+    "hra": "house rent allowance",
+    "lta": "leave travel allowance",
+    "posh": "prevention of sexual harassment",
+    "gmc": "group mediclaim insurance"
+  },
+  "domain_keywords": {
+    "HR": [
+      "leave", "vacation", "holiday", "sick", "casual", "maternity", "paternity",
+      "wfh", "work from home", "remote", "hybrid", "attendance", "probation",
+      "notice period", "resignation", "termination", "relocation", "cafeteria",
+      "meal", "food voucher", "cab", "transport", "dress code", "health checkup"
+    ],
+    "IT": [
+      "laptop", "hardware", "software", "vpn", "byod", "internet", "broadband",
+      "wifi", "password", "security", "access badge", "monitor", "network",
+      "antivirus", "asset", "it support", "helpdesk"
+    ],
+    "FINANCE": [
+      "reimbursement", "allowance", "expense", "invoice", "receipt", "claim",
+      "travel allowance", "hotel", "lodging", "per diem", "tax", "income tax",
+      "provident fund", "pf", "esi", "bonus", "gratuity", "salary"
+    ],
+    "LEGAL": [
+      "nda", "compliance", "policy", "statutory", "shops and establishments act",
+      "posh", "confidentiality", "intellectual property", "contract", "vendor",
+      "disciplinary", "code of conduct"
+    ]
+  }
+}
